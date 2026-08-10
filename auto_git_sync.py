@@ -1,83 +1,92 @@
+import os
+import sys
 import time
 import subprocess
-import sys
-import io
-import os
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+from datetime import datetime
 
-# Force UTF-8 stdout with instant flushing
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+# GitHub Config & Placeholders
+GITHUB_USERNAME = "p27012026"
+GITHUB_EMAIL = "p27012026@gmail.com"
+REPOSITORY_NAME = "finace1"
+BRANCH_NAME = "main"
+POLL_INTERVAL_SECONDS = 15
 
-GIT_NAME = "p27012026"
-GIT_EMAIL = "p27012026@gmail.com"
-REPO_URL = "https://github.com/p27012026/finace1.git"
+def log(message):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{timestamp}] {message}", flush=True)
 
-print("==================================================", flush=True)
-print("⚡ Real-Time Instant Auto Git Sync Service Active", flush=True)
-print(f"User: {GIT_NAME} <{GIT_EMAIL}>", flush=True)
-print(f"Repository: {REPO_URL}", flush=True)
-print("==================================================", flush=True)
-
-# Configure credentials
-subprocess.run(["git", "config", "user.name", GIT_NAME], check=False)
-subprocess.run(["git", "config", "user.email", GIT_EMAIL], check=False)
-
-def get_current_branch():
+def run_git_command(args):
     try:
-        res = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True)
-        return res.stdout.strip() or "main"
-    except Exception:
-        return "main"
+        result = subprocess.run(
+            ["git"] + args,
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        log(f"Git command error ({' '.join(args)}): {e.stderr.strip()}")
+        return None
 
-def sync_now(reason="File change detected"):
+def setup_git_config():
+    log(f"Verifying Git config for repository '{REPOSITORY_NAME}'...")
+    run_git_command(["config", "user.name", GITHUB_USERNAME])
+    run_git_command(["config", "user.email", GITHUB_EMAIL])
+    
+    current_name = run_git_command(["config", "user.name"])
+    current_email = run_git_command(["config", "user.email"])
+    log(f"Git Configured User: {current_name} <{current_email}>")
+
+    remote_url = run_git_command(["remote", "get-url", "origin"])
+    log(f"Connected Remote Origin: {remote_url}")
+
+def has_uncommitted_changes():
+    status_output = run_git_command(["status", "--porcelain"])
+    return bool(status_output and status_output.strip())
+
+def sync_git():
+    if not has_uncommitted_changes():
+        return False
+
+    log("File changes detected in workspace. Initializing auto-sync...")
+
+    # Stage all changes
+    run_git_command(["add", "."])
+
+    # Commit with timestamped message
+    commit_msg = f"Auto-sync: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} updates for {REPOSITORY_NAME}"
+    commit_output = run_git_command(["commit", "-m", commit_msg])
+
+    if commit_output:
+        log(f"Committed changes: {commit_msg}")
+
+    # Push to existing origin main branch
+    log(f"Pushing commits to origin/{BRANCH_NAME}...")
+    push_output = run_git_command(["push", "origin", BRANCH_NAME])
+    
+    log(f"[OK] Successfully synchronized changes to GitHub ({GITHUB_USERNAME}/{REPOSITORY_NAME})!")
+    return True
+
+def main():
+    print("=" * 65)
+    print(f"  AUTOMATIC GIT SYNC SYSTEM - {REPOSITORY_NAME}")
+    print(f"  Target Repository: https://github.com/{GITHUB_USERNAME}/{REPOSITORY_NAME}.git")
+    print(f"  User: {GITHUB_USERNAME} ({GITHUB_EMAIL})")
+    print("=" * 65)
+
+    setup_git_config()
+    log(f"Monitoring project workspace for changes every {POLL_INTERVAL_SECONDS} seconds...")
+    log("Press Ctrl+C to stop auto-sync.\n")
+
     try:
-        branch = get_current_branch()
-        subprocess.run(["git", "add", "."], check=False)
-        status = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
-        if status.stdout.strip():
-            print(f"\n⚡ [INSTANT SYNC] {reason}! Pushing immediately to GitHub ({branch})...", flush=True)
-            subprocess.run(["git", "commit", "-m", f"Real-time sync: {reason}"], check=False)
-            push_res = subprocess.run(["git", "push", "origin", branch], capture_output=True, text=True)
-            if push_res.returncode == 0:
-                print(f"✅ [SUCCESS] Pushed instantly to GitHub ({branch})!", flush=True)
-            else:
-                print(f"⚠️ [STATUS] {push_res.stderr.strip() or push_res.stdout.strip()}", flush=True)
-    except Exception as e:
-        print(f"⚠️ [ERROR] Sync exception: {e}", flush=True)
+        while True:
+            try:
+                sync_git()
+            except Exception as e:
+                log(f"Sync error encountered: {e}")
+            time.sleep(POLL_INTERVAL_SECONDS)
+    except KeyboardInterrupt:
+        log("\nAuto Git Sync service stopped cleanly.")
 
-class InstantGitSyncHandler(FileSystemEventHandler):
-    def __init__(self):
-        super().__init__()
-        self.last_sync = 0
-
-    def on_any_event(self, event):
-        # Ignore git, node_modules, venv, pycache, dist, and log files
-        path = event.src_path.replace('\\', '/')
-        if any(ignored in path for ignored in ['/.git/', '/node_modules/', '/venv/', '/__pycache__/', '/dist/', '/.gemini/']):
-            return
-        
-        now = time.time()
-        # Debounce multiple rapid file events within 0.5 seconds
-        if now - self.last_sync > 0.5:
-            self.last_sync = now
-            filename = os.path.basename(path)
-            sync_now(f"Modified {filename}")
-
-# Perform initial sync check on startup
-sync_now("Startup sync check")
-
-print("👀 Watching workspace for instant file changes (Save any file to trigger instant push)...", flush=True)
-
-event_handler = InstantGitSyncHandler()
-observer = Observer()
-observer.schedule(event_handler, path='.', recursive=True)
-observer.start()
-
-try:
-    while True:
-        time.sleep(0.5)
-except KeyboardInterrupt:
-    observer.stop()
-
-observer.join()
+if __name__ == "__main__":
+    main()
