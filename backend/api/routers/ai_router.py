@@ -299,3 +299,41 @@ def get_chat_history(
         ChatHistory.session_id == session_id
     ).order_by(ChatHistory.timestamp.asc()).all()
     return chats
+
+@router.get("/sessions")
+def get_chat_sessions(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    chats = db.query(ChatHistory).filter(
+        ChatHistory.user_id == current_user.id
+    ).order_by(ChatHistory.timestamp.desc()).all()
+
+    sessions_map = {}
+    for c in chats:
+        sid = c.session_id or "default"
+        if sid not in sessions_map:
+            sessions_map[sid] = {
+                "session_id": sid,
+                "title": c.message[:35] + "..." if len(c.message) > 35 else c.message,
+                "last_updated": c.timestamp,
+                "message_count": 0
+            }
+        sessions_map[sid]["message_count"] += 1
+        if c.sender == "user" and c.message:
+            sessions_map[sid]["title"] = c.message[:35] + "..." if len(c.message) > 35 else c.message
+
+    return list(sessions_map.values())
+
+@router.delete("/session/{session_id}")
+def delete_chat_session(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db.query(ChatHistory).filter(
+        ChatHistory.user_id == current_user.id,
+        ChatHistory.session_id == session_id
+    ).delete()
+    db.commit()
+    return {"message": f"Session {session_id} deleted successfully"}
