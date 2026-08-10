@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+venv/
+ENV/
+env/
+
+# Builds & Outputs
+dist/
+build/
+*.egg-info/
+
+# Python Cache & Databases
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs & OS Files
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini
