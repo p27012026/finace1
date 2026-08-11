@@ -143,6 +143,28 @@ def process_ai_agent_command(user_message: str, current_user: User, db: Session,
         else:
             return "**No recent expense records found to delete.**", False
 
+    # 3B. CLEAR ALL TRANSACTIONS / RESET ACCOUNT DATA TOOL
+    elif any(kw in msg for kw in ['clear all data', 'reset all data', 'reset my data', 'delete all transactions', 'clear all expenses', 'reset account', 'clear data']):
+        db.query(Expense).filter(Expense.user_id == current_user.id).delete()
+        db.query(Income).filter(Income.user_id == current_user.id).delete()
+        db.query(Budget).filter(Budget.user_id == current_user.id).delete()
+        db.query(Goal).filter(Goal.user_id == current_user.id).delete()
+        db.commit()
+
+        reply = (
+            f"**Intent Detected:** Reset Account Financial Data\n"
+            f"**Action Executed:** `reset_account_data()`\n"
+            f"**Status:** Success ✅\n\n"
+            f"**Details:**\n"
+            f"• All Income, Expense, Budget & Goal records cleared.\n"
+            f"• Net Monthly Income: **₹0.00**\n"
+            f"• Net Monthly Expenses: **₹0.00**\n"
+            f"• Net Cash Flow: **₹0.00**\n\n"
+            f"**Dashboard Synchronized ✅**\n\n"
+            f"💡 **AI Financial Notice:** Your financial ledger has been reset to zero! You can now start fresh."
+        )
+        return reply, True
+
     # 4. CREATE BUDGET TOOL
     elif any(kw in msg for kw in ['create budget', 'set budget', 'budget for', 'budget of']):
         if amount and amount > 0:
