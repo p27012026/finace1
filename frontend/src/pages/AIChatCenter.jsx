@@ -6,18 +6,13 @@ import {
 import axios from 'axios';
 import { useCurrency } from '../context/CurrencyContext';
 
-const WELCOME_MESSAGE = {
-  sender: 'ai',
-  message: 'Hello! I am your **Antigravity AI Financial Advisor**. 👋\n\nI am your primary financial command center! You can ask me to perform actions directly or provide real-time investment advice, such as:\n• `Add ₹10,000 salary` or `Add ₹350 pizza expense`\n• `I am thinking of a safe investment` or `How to invest ₹1 Lakh?`\n• `Set Food budget to ₹15,000` or `Calculate EMI for ₹5,00,000`\n• `Delete last expense`\n\nWhat financial task would you like to execute today?'
-};
-
 const AIChatCenter = () => {
   const { formatCurrency } = useCurrency();
   const [sessionId, setSessionId] = useState(
     () => `session_${Date.now()}`
   );
   const [sessions, setSessions] = useState([]);
-  const [messages, setMessages] = useState([WELCOME_MESSAGE]);
+  const [messages, setMessages] = useState([]);
   const [inputMsg, setInputMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [summaryData, setSummaryData] = useState(null);
@@ -65,7 +60,7 @@ const AIChatCenter = () => {
       if (res.data && res.data.length > 0) {
         setMessages(res.data);
       } else {
-        setMessages([WELCOME_MESSAGE]);
+        setMessages([]);
       }
     } catch (err) {
       console.error('Failed to load session history:', err);
@@ -77,7 +72,7 @@ const AIChatCenter = () => {
   const startNewChat = () => {
     const newSid = `session_${Date.now()}`;
     setSessionId(newSid);
-    setMessages([WELCOME_MESSAGE]);
+    setMessages([]);
     fetchSessions();
   };
 
@@ -357,38 +352,67 @@ const AIChatCenter = () => {
           </div>
 
           {/* Message Feed */}
-          <div className="flex-1 p-5 overflow-y-auto space-y-4 text-xs">
-            {messages.map((msg, index) => {
-              const isUser = msg.sender === 'user';
-              return (
-                <div
-                  key={index}
-                  className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in duration-300`}
-                >
-                  <div className={`p-2 rounded-xl h-8 w-8 flex items-center justify-center flex-shrink-0 shadow-md ${
-                    isUser ? 'bg-indigo-600 text-white' : 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white'
-                  }`}>
-                    {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                  </div>
-                  <div className={`p-4 rounded-2xl max-w-[85%] leading-relaxed space-y-2 ${
-                    isUser 
-                      ? 'bg-indigo-600 text-white rounded-tr-none shadow-md shadow-indigo-500/20 font-medium' 
-                      : 'bg-slate-800/90 text-slate-100 rounded-tl-none border border-slate-700/80 shadow-md'
-                  }`}>
-                    {renderFormattedMessage(msg.message)}
-                  </div>
+          <div className="flex-1 p-5 overflow-y-auto space-y-4 text-xs flex flex-col justify-between">
+            {messages.length === 0 ? (
+              /* ChatGPT Blank Slate Welcome Hero Screen */
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4 animate-in fade-in zoom-in-95 duration-300">
+                <div className="p-4 rounded-3xl bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-2xl shadow-indigo-500/30 text-white">
+                  <Bot className="w-10 h-10 animate-bounce" />
                 </div>
-              );
-            })}
+                <div className="space-y-1 max-w-md">
+                  <h3 className="text-xl font-bold text-slate-100">What can I help with today?</h3>
+                  <p className="text-xs text-slate-400">
+                    Ask me any financial questions or execute actions like logging expenses, adding salary, or building investment plans.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg w-full pt-4">
+                  {QUICK_PROMPTS.slice(0, 4).map((qp, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSendText(qp.prompt)}
+                      className="p-3.5 rounded-2xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-indigo-500/50 text-left transition-all group cursor-pointer shadow-sm"
+                    >
+                      <div className="text-xs font-semibold text-slate-200 group-hover:text-indigo-300">{qp.label}</div>
+                      <div className="text-[10px] text-slate-400 truncate mt-0.5">{qp.prompt}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map((msg, index) => {
+                  const isUser = msg.sender === 'user';
+                  return (
+                    <div
+                      key={index}
+                      className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in duration-300`}
+                    >
+                      <div className={`p-2 rounded-xl h-8 w-8 flex items-center justify-center flex-shrink-0 shadow-md ${
+                        isUser ? 'bg-indigo-600 text-white' : 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white'
+                      }`}>
+                        {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                      </div>
+                      <div className={`p-4 rounded-2xl max-w-[85%] leading-relaxed space-y-2 ${
+                        isUser 
+                          ? 'bg-indigo-600 text-white rounded-tr-none shadow-md shadow-indigo-500/20 font-medium' 
+                          : 'bg-slate-800/90 text-slate-100 rounded-tl-none border border-slate-700/80 shadow-md'
+                      }`}>
+                        {renderFormattedMessage(msg.message)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {loading && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 pt-2">
                 <div className="p-2 rounded-xl bg-purple-600 text-white animate-pulse">
                   <Bot className="w-4 h-4" />
                 </div>
                 <div className="px-4 py-3 rounded-2xl bg-slate-800 border border-slate-700 text-slate-400 text-xs flex items-center gap-2">
                   <RefreshCw className="w-3.5 h-3.5 animate-spin text-indigo-400" />
-                  <span>Analyzing your real-time financial profile & generating plan...</span>
+                  <span>Analyzing your real-time financial profile & generating response...</span>
                 </div>
               </div>
             )}
