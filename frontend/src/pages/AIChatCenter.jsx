@@ -132,7 +132,7 @@ const AIChatCenter = () => {
         return <em key={i} className="italic text-indigo-300">{part.slice(1, -1)}</em>;
       }
       if (part.startsWith('`') && part.endsWith('`')) {
-        return <code key={i} className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-amber-300 font-mono text-[11px]">{part.slice(1, -1)}</code>;
+        return <code key={i} className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-amber-300 font-mono text-xs">{part.slice(1, -1)}</code>;
       }
       return part;
     });
@@ -171,7 +171,7 @@ const AIChatCenter = () => {
         return (
           <div className="space-y-3">
             {nonTableBefore.length > 0 && (
-              <div className="whitespace-pre-wrap leading-relaxed">
+              <div className="whitespace-pre-wrap leading-relaxed text-sm">
                 {formatInlineMarkdown(nonTableBefore.join('\n'))}
               </div>
             )}
@@ -181,15 +181,15 @@ const AIChatCenter = () => {
                 <thead>
                   <tr className="bg-indigo-950/70 border-b border-slate-700 text-indigo-300 font-bold">
                     {headers.map((h, idx) => (
-                      <th key={idx} className="p-2.5 whitespace-nowrap">{formatInlineMarkdown(h)}</th>
+                      <th key={idx} className="p-3 whitespace-nowrap text-xs">{formatInlineMarkdown(h)}</th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800 text-slate-200">
+                <tbody className="divide-y divide-slate-800 text-slate-200 text-xs">
                   {dataRows.map((row, rIdx) => (
                     <tr key={rIdx} className="hover:bg-slate-800/50 transition-colors">
                       {row.map((cell, cIdx) => (
-                        <td key={cIdx} className="p-2.5">{formatInlineMarkdown(cell)}</td>
+                        <td key={cIdx} className="p-3">{formatInlineMarkdown(cell)}</td>
                       ))}
                     </tr>
                   ))}
@@ -198,7 +198,7 @@ const AIChatCenter = () => {
             </div>
 
             {nonTableAfter.length > 0 && (
-              <div className="whitespace-pre-wrap leading-relaxed">
+              <div className="whitespace-pre-wrap leading-relaxed text-sm">
                 {formatInlineMarkdown(nonTableAfter.join('\n'))}
               </div>
             )}
@@ -208,7 +208,7 @@ const AIChatCenter = () => {
     }
 
     return (
-      <div className="whitespace-pre-wrap leading-relaxed">
+      <div className="whitespace-pre-wrap leading-relaxed text-sm">
         {formatInlineMarkdown(content)}
       </div>
     );
@@ -229,7 +229,7 @@ const AIChatCenter = () => {
   const healthScore = summaryData?.financial_health_score?.score || 82;
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-500 max-w-7xl mx-auto pb-6 h-[calc(100vh-6rem)] flex flex-col">
+    <div className="space-y-3 animate-in fade-in duration-500 w-full h-[calc(100vh-4.2rem)] flex flex-col">
       {/* Hero Header & Live Financial Metrics Bar */}
       <div className="glass-panel p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-indigo-500/30 bg-gradient-to-r from-indigo-950/30 via-slate-900/50 to-slate-900/50 flex-shrink-0">
         <div className="flex items-center gap-3">
@@ -256,35 +256,35 @@ const AIChatCenter = () => {
 
         {/* Live Context Metrics */}
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs">
+          <div className="px-3.5 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs">
             <span className="text-[10px] text-slate-400 block">Monthly Income</span>
-            <strong className="text-emerald-400 font-bold">{formatCurrency(totalInc)}</strong>
+            <strong className="text-emerald-400 font-bold text-sm">{formatCurrency(totalInc)}</strong>
           </div>
-          <div className="px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs">
+          <div className="px-3.5 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs">
             <span className="text-[10px] text-slate-400 block">Monthly Expenses</span>
-            <strong className="text-rose-400 font-bold">{formatCurrency(totalExp)}</strong>
+            <strong className="text-rose-400 font-bold text-sm">{formatCurrency(totalExp)}</strong>
           </div>
-          <div className="px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs">
+          <div className="px-3.5 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs">
             <span className="text-[10px] text-slate-400 block">Net Savings</span>
-            <strong className="text-indigo-300 font-bold">{formatCurrency(netCashFlow)}</strong>
+            <strong className="text-indigo-300 font-bold text-sm">{formatCurrency(netCashFlow)}</strong>
           </div>
-          <div className="px-3 py-1.5 rounded-xl bg-slate-800/80 border border-indigo-500/30 text-xs bg-indigo-950/30">
+          <div className="px-3.5 py-2 rounded-xl bg-slate-800/80 border border-indigo-500/30 text-xs bg-indigo-950/30">
             <span className="text-[10px] text-indigo-300 block">Health Score</span>
-            <strong className="text-amber-400 font-bold">{healthScore} / 100</strong>
+            <strong className="text-amber-400 font-bold text-sm">{healthScore} / 100</strong>
           </div>
         </div>
       </div>
 
-      {/* Main Chat Workspace Layout with ChatGPT Sidebar */}
+      {/* Main Chat Workspace Layout with Expanded Dimensions */}
       <div className="glass-panel flex-1 flex overflow-hidden border-slate-800 shadow-2xl relative">
         {/* ChatGPT History Sidebar */}
         {sidebarOpen && (
-          <aside className="w-64 bg-slate-900/90 border-r border-slate-800 flex flex-col flex-shrink-0 animate-in slide-in-from-left duration-200">
+          <aside className="w-72 md:w-80 bg-slate-900/90 border-r border-slate-800 flex flex-col flex-shrink-0 animate-in slide-in-from-left duration-200">
             {/* New Chat Button */}
-            <div className="p-3 border-b border-slate-800">
+            <div className="p-4 border-b border-slate-800">
               <button
                 onClick={startNewChat}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 hover:opacity-95 transition-all cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 hover:opacity-95 transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ New Chat</span>
@@ -292,9 +292,9 @@ const AIChatCenter = () => {
             </div>
 
             {/* Saved Sessions History List */}
-            <div className="flex-1 overflow-y-auto p-2 space-y-1 text-xs">
+            <div className="flex-1 overflow-y-auto p-3 space-y-1.5 text-xs">
               <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Clock className="w-3 h-3 text-indigo-400" /> Recent Chat Sessions
+                <Clock className="w-3.5 h-3.5 text-indigo-400" /> Recent Chat Sessions
               </div>
 
               {sessions.length === 0 ? (
@@ -308,14 +308,14 @@ const AIChatCenter = () => {
                     <div
                       key={s.session_id}
                       onClick={() => loadSession(s.session_id)}
-                      className={`group flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all ${
+                      className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${
                         isActive
                           ? 'bg-indigo-600/30 text-indigo-200 border border-indigo-500/40 font-semibold'
                           : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200 border border-transparent'
                       }`}
                     >
-                      <div className="flex items-center gap-2 min-w-0 pr-1">
-                        <MessageSquare className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
+                      <div className="flex items-center gap-2.5 min-w-0 pr-1">
+                        <MessageSquare className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
                         <span className="truncate text-xs">{s.title || 'Conversation Session'}</span>
                       </div>
                       <button
@@ -336,15 +336,15 @@ const AIChatCenter = () => {
         {/* Central Chat Feed Container */}
         <div className="flex-1 flex flex-col min-w-0 bg-slate-950/40">
           {/* Quick Suggestion Chips */}
-          <div className="px-4 py-2.5 bg-slate-900/60 border-b border-slate-800 flex items-center gap-2 overflow-x-auto flex-shrink-0">
-            <span className="text-[11px] text-indigo-400 font-bold whitespace-nowrap flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-amber-400" /> Quick Actions:
+          <div className="px-5 py-3 bg-slate-900/60 border-b border-slate-800 flex items-center gap-2 overflow-x-auto flex-shrink-0">
+            <span className="text-xs text-indigo-400 font-bold whitespace-nowrap flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Quick Actions:
             </span>
             {QUICK_PROMPTS.map((qp, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSendText(qp.prompt)}
-                className="px-3 py-1 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[11px] text-slate-300 hover:text-white transition-all whitespace-nowrap cursor-pointer shadow-sm hover:border-indigo-500/50"
+                className="px-3.5 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-300 hover:text-white transition-all whitespace-nowrap cursor-pointer shadow-sm hover:border-indigo-500/50"
               >
                 {qp.label}
               </button>
@@ -352,47 +352,47 @@ const AIChatCenter = () => {
           </div>
 
           {/* Message Feed */}
-          <div className="flex-1 p-5 overflow-y-auto space-y-4 text-xs flex flex-col justify-between">
+          <div className="flex-1 p-6 overflow-y-auto space-y-5 text-sm flex flex-col justify-between">
             {messages.length === 0 ? (
               /* ChatGPT Blank Slate Welcome Hero Screen */
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4 animate-in fade-in zoom-in-95 duration-300">
-                <div className="p-4 rounded-3xl bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-2xl shadow-indigo-500/30 text-white">
-                  <Bot className="w-10 h-10 animate-bounce" />
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-5 animate-in fade-in zoom-in-95 duration-300">
+                <div className="p-5 rounded-3xl bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-2xl shadow-indigo-500/30 text-white">
+                  <Bot className="w-12 h-12 animate-bounce" />
                 </div>
-                <div className="space-y-1 max-w-md">
-                  <h3 className="text-xl font-bold text-slate-100">What can I help with today?</h3>
-                  <p className="text-xs text-slate-400">
+                <div className="space-y-1.5 max-w-lg">
+                  <h3 className="text-2xl font-bold text-slate-100">What can I help with today?</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">
                     Ask me any financial questions or execute actions like logging expenses, adding salary, or building investment plans.
                   </p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg w-full pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl w-full pt-4">
                   {QUICK_PROMPTS.slice(0, 4).map((qp, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleSendText(qp.prompt)}
-                      className="p-3.5 rounded-2xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-indigo-500/50 text-left transition-all group cursor-pointer shadow-sm"
+                      className="p-4 rounded-2xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-indigo-500/50 text-left transition-all group cursor-pointer shadow-sm"
                     >
                       <div className="text-xs font-semibold text-slate-200 group-hover:text-indigo-300">{qp.label}</div>
-                      <div className="text-[10px] text-slate-400 truncate mt-0.5">{qp.prompt}</div>
+                      <div className="text-[11px] text-slate-400 truncate mt-0.5">{qp.prompt}</div>
                     </button>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {messages.map((msg, index) => {
                   const isUser = msg.sender === 'user';
                   return (
                     <div
                       key={index}
-                      className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in duration-300`}
+                      className={`flex gap-3.5 ${isUser ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in duration-300`}
                     >
-                      <div className={`p-2 rounded-xl h-8 w-8 flex items-center justify-center flex-shrink-0 shadow-md ${
+                      <div className={`p-2.5 rounded-xl h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-md ${
                         isUser ? 'bg-indigo-600 text-white' : 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white'
                       }`}>
                         {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                       </div>
-                      <div className={`p-4 rounded-2xl max-w-[85%] leading-relaxed space-y-2 ${
+                      <div className={`p-5 rounded-2xl max-w-[92%] leading-relaxed space-y-2 ${
                         isUser 
                           ? 'bg-indigo-600 text-white rounded-tr-none shadow-md shadow-indigo-500/20 font-medium' 
                           : 'bg-slate-800/90 text-slate-100 rounded-tl-none border border-slate-700/80 shadow-md'
@@ -407,7 +407,7 @@ const AIChatCenter = () => {
 
             {loading && (
               <div className="flex items-center gap-3 pt-2">
-                <div className="p-2 rounded-xl bg-purple-600 text-white animate-pulse">
+                <div className="p-2.5 rounded-xl bg-purple-600 text-white animate-pulse">
                   <Bot className="w-4 h-4" />
                 </div>
                 <div className="px-4 py-3 rounded-2xl bg-slate-800 border border-slate-700 text-slate-400 text-xs flex items-center gap-2">
@@ -419,20 +419,20 @@ const AIChatCenter = () => {
             <div ref={chatEndRef} />
           </div>
 
-          {/* Input Box */}
-          <div className="p-3 bg-slate-900 border-t border-slate-800 space-y-2 flex-shrink-0">
-            <form onSubmit={handleFormSubmit} className="flex gap-2">
+          {/* Expanded Input Box */}
+          <div className="p-4 bg-slate-900 border-t border-slate-800 space-y-2 flex-shrink-0">
+            <form onSubmit={handleFormSubmit} className="flex gap-3">
               <input
                 type="text"
                 placeholder="Ask AI or execute commands (e.g. 'I am thinking of a safe investment', 'Add ₹10000 salary')..."
                 value={inputMsg}
                 onChange={(e) => setInputMsg(e.target.value)}
-                className="flex-1 px-4 py-3 rounded-xl bg-slate-800/90 border border-slate-700 text-slate-200 placeholder-slate-400 text-xs focus:outline-none focus:border-indigo-500 shadow-inner"
+                className="flex-1 px-5 py-3.5 rounded-xl bg-slate-800/90 border border-slate-700 text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:border-indigo-500 shadow-inner"
               />
               <button
                 type="submit"
                 disabled={loading || !inputMsg.trim()}
-                className="px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-semibold text-xs shadow-lg shadow-indigo-500/30 hover:opacity-90 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-semibold text-sm shadow-lg shadow-indigo-500/30 hover:opacity-90 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 <span>Execute</span>
                 <Send className="w-4 h-4" />
