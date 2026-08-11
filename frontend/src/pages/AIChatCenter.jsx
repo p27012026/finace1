@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Bot, Send, Sparkles, User, RefreshCw, MessageSquare, Plus,
-  Trash2, ChevronLeft, ChevronRight, Clock
+  Trash2, ChevronLeft, ChevronRight, Clock, ShieldCheck, TrendingUp
 } from 'lucide-react';
 import axios from 'axios';
 import { useCurrency } from '../context/CurrencyContext';
 
 const WELCOME_MESSAGE = {
   sender: 'ai',
-  message: 'Hello! I am your **Antigravity AI Financial Advisor**. 👋\n\nI am your primary financial command center! You can ask me to perform actions directly, such as:\n• `Add ₹10,000 salary` or `Add ₹350 pizza expense`\n• `Set Food budget to ₹15,000` or `Create goal New Laptop target ₹80,000`\n• `Calculate EMI for ₹5,00,000 at 8.5% for 36 months`\n• `Delete last expense`\n\nWhat financial task would you like to execute today?'
+  message: 'Hello! I am your **Antigravity AI Financial Advisor**. 👋\n\nI am your primary financial command center! You can ask me to perform actions directly or provide real-time investment advice, such as:\n• `Add ₹10,000 salary` or `Add ₹350 pizza expense`\n• `I am thinking of a safe investment` or `How to invest ₹1 Lakh?`\n• `Set Food budget to ₹15,000` or `Calculate EMI for ₹5,00,000`\n• `Delete last expense`\n\nWhat financial task would you like to execute today?'
 };
 
 const AIChatCenter = () => {
@@ -126,13 +126,106 @@ const AIChatCenter = () => {
     handleSendText();
   };
 
+  const formatInlineMarkdown = (text) => {
+    if (!text) return text;
+    const parts = text.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i} className="font-bold text-slate-100">{part.slice(2, -2)}</strong>;
+      }
+      if (part.startsWith('*') && part.endsWith('*')) {
+        return <em key={i} className="italic text-indigo-300">{part.slice(1, -1)}</em>;
+      }
+      if (part.startsWith('`') && part.endsWith('`')) {
+        return <code key={i} className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-amber-300 font-mono text-[11px]">{part.slice(1, -1)}</code>;
+      }
+      return part;
+    });
+  };
+
+  const renderFormattedMessage = (content) => {
+    if (!content) return null;
+
+    // Check if message contains a Markdown table
+    if (content.includes('|') && content.includes('\n|')) {
+      const lines = content.split('\n');
+      const tableLines = [];
+      const nonTableBefore = [];
+      const nonTableAfter = [];
+      let inTable = false;
+      let tableDone = false;
+
+      for (let line of lines) {
+        if (line.trim().startsWith('|')) {
+          inTable = true;
+          tableLines.push(line);
+        } else if (inTable && !tableDone) {
+          tableDone = true;
+          nonTableAfter.push(line);
+        } else if (tableDone) {
+          nonTableAfter.push(line);
+        } else {
+          nonTableBefore.push(line);
+        }
+      }
+
+      if (tableLines.length >= 2) {
+        const headers = tableLines[0].split('|').map(c => c.trim()).filter(Boolean);
+        const dataRows = tableLines.slice(2).map(row => row.split('|').map(c => c.trim()).filter(Boolean));
+
+        return (
+          <div className="space-y-3">
+            {nonTableBefore.length > 0 && (
+              <div className="whitespace-pre-wrap leading-relaxed">
+                {formatInlineMarkdown(nonTableBefore.join('\n'))}
+              </div>
+            )}
+            
+            <div className="overflow-x-auto my-3 rounded-xl border border-slate-700/80 bg-slate-900/90 shadow-md">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-indigo-950/70 border-b border-slate-700 text-indigo-300 font-bold">
+                    {headers.map((h, idx) => (
+                      <th key={idx} className="p-2.5 whitespace-nowrap">{formatInlineMarkdown(h)}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800 text-slate-200">
+                  {dataRows.map((row, rIdx) => (
+                    <tr key={rIdx} className="hover:bg-slate-800/50 transition-colors">
+                      {row.map((cell, cIdx) => (
+                        <td key={cIdx} className="p-2.5">{formatInlineMarkdown(cell)}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {nonTableAfter.length > 0 && (
+              <div className="whitespace-pre-wrap leading-relaxed">
+                {formatInlineMarkdown(nonTableAfter.join('\n'))}
+              </div>
+            )}
+          </div>
+        );
+      }
+    }
+
+    return (
+      <div className="whitespace-pre-wrap leading-relaxed">
+        {formatInlineMarkdown(content)}
+      </div>
+    );
+  };
+
   const QUICK_PROMPTS = [
+    { label: "🛡️ Safe Investment Plan", prompt: "I am thinking of a safe investment" },
     { label: "➕ Add ₹10,000 Salary", prompt: "Add ₹10000 salary" },
     { label: "🍕 Add ₹350 Pizza Expense", prompt: "I spent ₹350 on Pizza yesterday" },
     { label: "🎯 Set Food Budget ₹15,000", prompt: "Create budget of ₹15000 for Food" },
     { label: "🧮 Calculate EMI (5 Lakhs)", prompt: "Calculate EMI for ₹500000 at 8.5% for 36 months" },
-    { label: "🗑️ Delete Last Expense", prompt: "Delete last expense" },
-    { label: "📈 Investment Strategy", prompt: "Suggest investment allocation plan" }
+    { label: "🗑️ Delete Last Expense", prompt: "Delete last expense" }
   ];
 
   const netCashFlow = summaryData?.cash_flow?.net_cash_flow || 0;
@@ -282,9 +375,7 @@ const AIChatCenter = () => {
                       ? 'bg-indigo-600 text-white rounded-tr-none shadow-md shadow-indigo-500/20 font-medium' 
                       : 'bg-slate-800/90 text-slate-100 rounded-tl-none border border-slate-700/80 shadow-md'
                   }`}>
-                    <div className="whitespace-pre-wrap font-sans text-xs">
-                      {msg.message}
-                    </div>
+                    {renderFormattedMessage(msg.message)}
                   </div>
                 </div>
               );
@@ -297,7 +388,7 @@ const AIChatCenter = () => {
                 </div>
                 <div className="px-4 py-3 rounded-2xl bg-slate-800 border border-slate-700 text-slate-400 text-xs flex items-center gap-2">
                   <RefreshCw className="w-3.5 h-3.5 animate-spin text-indigo-400" />
-                  <span>Executing AI action & saving session...</span>
+                  <span>Analyzing your real-time financial profile & generating plan...</span>
                 </div>
               </div>
             )}
@@ -309,7 +400,7 @@ const AIChatCenter = () => {
             <form onSubmit={handleFormSubmit} className="flex gap-2">
               <input
                 type="text"
-                placeholder="Ask AI or execute commands (e.g. 'Add ₹10000 salary', 'I spent ₹350 on pizza')..."
+                placeholder="Ask AI or execute commands (e.g. 'I am thinking of a safe investment', 'Add ₹10000 salary')..."
                 value={inputMsg}
                 onChange={(e) => setInputMsg(e.target.value)}
                 className="flex-1 px-4 py-3 rounded-xl bg-slate-800/90 border border-slate-700 text-slate-200 placeholder-slate-400 text-xs focus:outline-none focus:border-indigo-500 shadow-inner"
