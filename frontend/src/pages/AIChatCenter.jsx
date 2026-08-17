@@ -350,22 +350,6 @@ const AIChatCenter = () => {
 
         {/* Central Chat Feed Container */}
         <div className="flex-1 flex flex-col min-w-0 bg-slate-950/40">
-          {/* Quick Suggestion Chips */}
-          <div className="px-5 py-3 bg-slate-900/60 border-b border-slate-800 flex items-center gap-2 overflow-x-auto flex-shrink-0">
-            <span className="text-xs text-indigo-400 font-bold whitespace-nowrap flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Quick Actions:
-            </span>
-            {QUICK_PROMPTS.map((qp, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSendText(qp.prompt)}
-                className="px-3.5 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-300 hover:text-white transition-all whitespace-nowrap cursor-pointer shadow-sm hover:border-indigo-500/50"
-              >
-                {qp.label}
-              </button>
-            ))}
-          </div>
-
           {/* Message Feed */}
           <div className="flex-1 p-6 overflow-y-auto space-y-5 text-sm flex flex-col justify-between">
             {messages.length === 0 ? (
@@ -379,18 +363,6 @@ const AIChatCenter = () => {
                   <p className="text-xs text-slate-400 leading-relaxed">
                     Ask me any financial questions or execute actions like logging expenses, adding salary, or building investment plans.
                   </p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl w-full pt-4">
-                  {QUICK_PROMPTS.slice(0, 4).map((qp, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSendText(qp.prompt)}
-                      className="p-4 rounded-2xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-indigo-500/50 text-left transition-all group cursor-pointer shadow-sm"
-                    >
-                      <div className="text-xs font-semibold text-slate-200 group-hover:text-indigo-300">{qp.label}</div>
-                      <div className="text-[11px] text-slate-400 truncate mt-0.5">{qp.prompt}</div>
-                    </button>
-                  ))}
                 </div>
               </div>
             ) : (
