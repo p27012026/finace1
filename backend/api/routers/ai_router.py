@@ -322,10 +322,20 @@ def chat_with_advisor(
         )
     except Exception as e:
         error_logger.error(f"Error in chat_with_advisor endpoint: {str(e)}")
+        db.rollback()
         fallback_msg = gemini_service._generate_conversational_response(
             req.message, 
             {"user_name": current_user.full_name or current_user.email, "monthly_income": 0, "monthly_expenses": 0}
         )
+        try:
+            user_chat = ChatHistory(user_id=current_user.id, session_id=req.session_id, sender="user", message=req.message)
+            ai_chat = ChatHistory(user_id=current_user.id, session_id=req.session_id, sender="ai", message=fallback_msg)
+            db.add(user_chat)
+            db.add(ai_chat)
+            db.commit()
+        except Exception:
+            db.rollback()
+
         return ChatResponse(
             sender="ai",
             message=fallback_msg,
