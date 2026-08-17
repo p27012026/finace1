@@ -133,11 +133,20 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
         
         active_loans = user_context.get('active_loans', user_context.get('loans', []))
         active_loans_count = len(active_loans) if isinstance(active_loans, list) else 0
-        total_debt = sum(l.get('balance', 0.0) if isinstance(l, dict) else getattr(l, 'remaining_balance', 0.0) for l in active_loans) if active_loans_count > 0 else 0.0
-        monthly_emi = sum(l.get('emi', 0.0) if isinstance(l, dict) else getattr(l, 'emi_amount', 0.0) for l in active_loans) if active_loans_count > 0 else 0.0
         
+        total_debt = user_context.get('total_debt', 0.0)
+        if total_debt == 0.0 and active_loans_count > 0:
+            total_debt = sum(l.get('balance', 0.0) if isinstance(l, dict) else getattr(l, 'remaining_balance', 0.0) for l in active_loans)
+
+        monthly_emi = user_context.get('monthly_emi', 0.0)
+        if monthly_emi == 0.0 and active_loans_count > 0:
+            monthly_emi = sum(l.get('emi', 0.0) if isinstance(l, dict) else getattr(l, 'emi_amount', 0.0) for l in active_loans)
+
         credit_score = user_context.get('credit_score', summary.get('credit_score', 300))
-        credit_score_str = f"{credit_score} / 900 (No Credit History)" if credit_score == 300 else f"{credit_score} / 900"
+        if credit_score == 300 and active_loans_count == 0 and total_debt == 0:
+            credit_score_str = f"{credit_score} / 900 (No Credit History)"
+        else:
+            credit_score_str = f"{credit_score} / 900"
         user_name = user_context.get('user_name', 'there')
 
         # Extract amount mentioned in query if any (e.g. ₹10,000 or 10000)
