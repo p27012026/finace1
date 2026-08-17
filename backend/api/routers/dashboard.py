@@ -52,7 +52,8 @@ def get_dashboard_widgets(
 
     # 8. Credit Score
     latest_credit_score = db.query(CreditScore).filter(CreditScore.user_id == current_user.id).order_by(CreditScore.record_date.desc()).first()
-    score_val = latest_credit_score.score if latest_credit_score else 750
+    dynamic_credit_eval = FinancialCalculator.calculate_dynamic_credit_score(loans, cards, total_income)
+    score_val = latest_credit_score.score if latest_credit_score else dynamic_credit_eval["score"]
 
     # Execute Pure Python Business Logic Calculations
     health_eval = FinancialCalculator.calculate_health_score(
