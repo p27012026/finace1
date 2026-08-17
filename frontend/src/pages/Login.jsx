@@ -9,7 +9,7 @@ const Login = () => {
   const location = useLocation();
   const successMessage = location.state?.message;
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(location.state?.email || '');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
+      await login(email.trim().toLowerCase(), password.trim());
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to sign in. Please check credentials.');
