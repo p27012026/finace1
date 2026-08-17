@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { TrendingUp, Plus, Trash2, Shield, Sparkles } from 'lucide-react';
+import { TrendingUp, Plus, Trash2, Shield, Sparkles, Wrench, Hammer, Clock } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 
 const Investments = () => {
@@ -51,14 +51,55 @@ const Investments = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-12">
+      {/* Top Header */}
       <div className="glass-panel p-6">
-        <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-indigo-400" />
-          Investment Portfolio & Asset Allocation
-        </h2>
-        <p className="text-xs text-slate-400 mt-1">
-          Track Stocks, Mutual Funds, ETFs, and Bonds with real-time P&L analytics and Gemini AI diversification guidance.
-        </p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-indigo-400" />
+              Investment Portfolio & Asset Allocation
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Track Stocks, Mutual Funds, ETFs, and Bonds with real-time P&L analytics and Gemini AI diversification guidance.
+            </p>
+          </div>
+          <div className="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold flex items-center gap-2 shrink-0">
+            <Hammer className="w-4 h-4 animate-bounce" />
+            <span>Status: Still Building 🚧</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Prominent Still Building / Active Development Notice Banner */}
+      <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900/90 to-indigo-950/40 border border-amber-500/40 text-xs space-y-3 relative overflow-hidden shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 shrink-0">
+            <Wrench className="w-6 h-6 animate-spin" style={{ animationDuration: '6s' }} />
+          </div>
+          <div>
+            <h3 className="text-sm font-extrabold text-amber-300 flex items-center gap-2">
+              🚧 Investment Module — Still Building & Under Active Development 🚀
+            </h3>
+            <p className="text-slate-300 mt-0.5 leading-relaxed">
+              We are actively building live stock market feeds (NSE / BSE), automated Mutual Fund NAV sync, and SIP goal trackers. You can track your manual assets below while live integrations are being finalized!
+            </p>
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-slate-700/60 flex flex-wrap gap-2 text-[11px]">
+          <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 font-medium flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Manual Ledger Tracking: Ready ✅
+          </span>
+          <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-medium flex items-center gap-1.5">
+            <Clock className="w-3 h-3" />
+            Live NSE/BSE Stock Feeds: Still Building... 🛠️
+          </span>
+          <span className="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 font-medium flex items-center gap-1.5">
+            <Clock className="w-3 h-3" />
+            Mutual Fund NAV Auto-Sync: Still Building... 🛠️
+          </span>
+        </div>
       </div>
 
       {/* KPI Row */}
