@@ -93,7 +93,7 @@ class PDFReportGenerator:
         meta_data = [
             [Paragraph("<b>Prepared For:</b>", normal_style), Paragraph(user_name, normal_style)],
             [Paragraph("<b>Report Date:</b>", normal_style), Paragraph(datetime.now().strftime("%B %d, %Y"), normal_style)],
-            [Paragraph("<b>Financial Health Rating:</b>", normal_style), Paragraph(f"<b>{report_data.get('health_score', 82)}/100 ({report_data.get('health_rating', 'Good')})</b>", normal_style)]
+            [Paragraph("<b>Financial Health Rating:</b>", normal_style), Paragraph(f"<b>{report_data.get('health_score', 0)}/100 ({report_data.get('health_rating', 'No Data Recorded')})</b>", normal_style)]
         ]
         meta_table = Table(meta_data, colWidths=[150, 300])
         meta_table.setStyle(TableStyle([
