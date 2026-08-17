@@ -222,3 +222,112 @@ class FinancialCalculator:
             "pnl": round(pnl, 2),
             "pnl_pct": round(pnl_pct, 2)
         }
+
+    @staticmethod
+    def calculate_dynamic_credit_score(
+        loans: List[Any],
+        credit_cards: List[Any],
+        monthly_income: float = 0.0
+    ) -> Dict[str, Any]:
+        """
+        Calculates a real-world dynamic CIBIL/FICO Credit Score (300 to 900 scale)
+        based on active loans, credit cards, payment history, utilization, and credit mix.
+        
+        If 0 loans and 0 credit cards exist:
+        returns Score = 300 (No Credit History / New Profile).
+        """
+        total_loans = len(loans or [])
+        total_cards = len(credit_cards or [])
+        
+        # If user has NO loans and NO credit cards, credit score is baseline 300 (No History)
+        if total_loans == 0 and total_cards == 0:
+            return {
+                "score": 300,
+                "rating": "No Credit History",
+                "status": "NH (No History)",
+                "credit_utilization_pct": 0.0,
+                "total_debt": 0.0,
+                "active_loans_count": 0,
+                "credit_cards_count": 0,
+                "on_time_payment_pct": 0.0,
+                "summary": "No active loans or credit cards found. Add a loan or credit card to build your credit score."
+            }
+        
+        # Base credit score starts from 550 for active credit profiles
+        score = 550.0
+        
+        # 1. Payment History Factor (Max +150 points)
+        default_count = 0
+        total_accounts = total_loans + total_cards
+        
+        for l in (loans or []):
+            status = getattr(l, 'status', 'Active') if hasattr(l, 'status') else (l.get('status') if isinstance(l, dict) else 'Active')
+            if status and 'default' in str(status).lower():
+                default_count += 1
+                
+        for c in (credit_cards or []):
+            c_status = getattr(c, 'status', 'Active') if hasattr(c, 'status') else (c.get('status') if isinstance(c, dict) else 'Active')
+            if c_status and 'overdue' in str(c_status).lower():
+                default_count += 1
+
+        on_time_pct = max(0.0, 100.0 - (default_count / max(1, total_accounts) * 100.0))
+        payment_points = (on_time_pct / 100.0) * 150.0
+        score += payment_points
+
+        # 2. Credit Utilization Ratio (Max +120 points)
+        total_limit = 0.0
+        total_balance = 0.0
+        for c in (credit_cards or []):
+            limit = getattr(c, 'credit_limit', 0.0) if hasattr(c, 'credit_limit') else (c.get('credit_limit', 0.0) if isinstance(c, dict) else 0.0)
+            balance = getattr(c, 'current_balance', 0.0) if hasattr(c, 'current_balance') else (c.get('current_balance', 0.0) if isinstance(c, dict) else 0.0)
+            total_limit += float(limit or 0.0)
+            total_balance += float(balance or 0.0)
+
+        util_pct = (total_balance / total_limit * 100.0) if total_limit > 0 else 0.0
+        
+        if total_cards > 0 and total_limit > 0:
+            if util_pct <= 30.0:
+                util_points = 120.0
+            elif util_pct <= 50.0:
+                util_points = 70.0
+            elif util_pct <= 80.0:
+                util_points = 30.0
+            else:
+                util_points = 0.0
+        else:
+            util_points = 60.0
+        
+        score += util_points
+
+        # 3. Credit Mix & Diversity (Max +50 points)
+        if total_loans > 0 and total_cards > 0:
+            mix_points = 50.0
+        elif total_loans > 0:
+            mix_points = 30.0
+        else:
+            mix_points = 20.0
+            
+        score += mix_points
+
+        # 4. Debt Burden Control (Max +30 points)
+        total_loan_balance = sum(float(getattr(l, 'remaining_balance', 0.0) if hasattr(l, 'remaining_balance') else (l.get('balance', 0.0) if isinstance(l, dict) else 0.0)) for l in (loans or []))
+        
+        if total_loan_balance > 0 and total_loan_balance < 100000:
+            score += 30.0
+        elif total_loan_balance > 500000:
+            score -= 30.0
+
+        final_score = int(min(900, max(300, round(score))))
+        rating = "Excellent" if final_score >= 780 else "Good" if final_score >= 700 else "Fair" if final_score >= 600 else "Needs Attention"
+
+        return {
+            "score": final_score,
+            "rating": rating,
+            "status": "Active Credit Profile",
+            "credit_utilization_pct": round(util_pct, 1),
+            "total_debt": round(total_loan_balance + total_balance, 2),
+            "active_loans_count": total_loans,
+            "credit_cards_count": total_cards,
+            "on_time_payment_pct": round(on_time_pct, 1),
+            "summary": f"Your calculated CIBIL score is {final_score} based on {total_loans} loan(s) and {total_cards} card(s)."
+        }
