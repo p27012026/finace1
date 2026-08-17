@@ -264,16 +264,19 @@ def chat_with_advisor(
 
         total_income = sum(i.amount for i in incomes) or 0.0
         total_expenses = sum(e.amount for e in expenses) or 0.0
+        total_debt = sum(l.remaining_balance for l in loans if getattr(l, 'status', 'Active') == 'Active') or 0.0
+        monthly_emi = sum(l.emi_amount for l in loans if getattr(l, 'status', 'Active') == 'Active') or 0.0
 
-        score_record = db.query(CreditScore).filter(CreditScore.user_id == current_user.id).order_by(CreditScore.record_date.desc()).first()
         dyn_credit = FinancialCalculator.calculate_dynamic_credit_score(loans, cards, total_income)
-        current_credit_score = score_record.score if score_record else dyn_credit["score"]
+        current_credit_score = dyn_credit["score"]
 
         user_context = {
             "user_name": current_user.full_name or current_user.email,
             "monthly_income": total_income,
             "monthly_expenses": total_expenses,
             "net_savings": total_income - total_expenses,
+            "total_debt": total_debt,
+            "monthly_emi": monthly_emi,
             "credit_score": current_credit_score,
             "credit_rating": dyn_credit["rating"],
             "credit_status": dyn_credit["status"],
