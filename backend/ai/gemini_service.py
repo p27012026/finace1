@@ -396,7 +396,7 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
             )
 
         # 6. Comprehensive Budget & Savings Guidance
-        elif any(w in msg for w in ['save', 'saving', 'budget', 'expense', 'spend', 'money', 'cut costs', 'salary']):
+        elif any(w in msg for w in ['save', 'saving', 'budget', 'expense', 'spend', 'money', 'cut costs']):
             needs = total_income * 0.50
             wants = total_income * 0.30
             savings = total_income * 0.20
