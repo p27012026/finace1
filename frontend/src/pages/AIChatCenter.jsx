@@ -226,7 +226,7 @@ const AIChatCenter = () => {
   const netCashFlow = summaryData?.cash_flow?.net_cash_flow || 0;
   const totalInc = summaryData?.cash_flow?.monthly_income || 0;
   const totalExp = summaryData?.cash_flow?.monthly_expenses || 0;
-  const healthScore = summaryData?.financial_health_score?.score || 82;
+  const healthScore = summaryData?.financial_health_score?.score ?? 0;
 
   return (
     <div className="space-y-3 animate-in fade-in duration-500 w-full h-[calc(100vh-4.2rem)] flex flex-col">

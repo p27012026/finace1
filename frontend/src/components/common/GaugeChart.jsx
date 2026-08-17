@@ -1,6 +1,6 @@
 import React from 'react';
 
-const GaugeChart = ({ score = 82, rating = 'Good' }) => {
+const GaugeChart = ({ score = 0, rating = 'No Data' }) => {
   const getRatingColor = () => {
     if (score >= 85) return 'text-emerald-400 stroke-emerald-400';
     if (score >= 70) return 'text-indigo-400 stroke-indigo-400';
