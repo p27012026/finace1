@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from backend.database.session import get_db
 from backend.models import User, UserSettings
 from backend.schemas.all_schemas import UserRegister, UserLogin, TokenResponse
@@ -16,15 +17,18 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 @router.post("/register", response_model=TokenResponse)
 def register(user_in: UserRegister, db: Session = Depends(get_db)):
     try:
-        existing = db.query(User).filter(User.email == user_in.email).first()
+        clean_email = user_in.email.strip().lower()
+        clean_password = user_in.password.strip()
+
+        existing = db.query(User).filter(func.lower(User.email) == clean_email).first()
         if existing:
             raise HTTPException(status_code=400, detail="User with this email already exists")
 
-        hashed_pwd = get_password_hash(user_in.password)
+        hashed_pwd = get_password_hash(clean_password)
         new_user = User(
-            email=user_in.email,
+            email=clean_email,
             hashed_password=hashed_pwd,
-            full_name=user_in.full_name or user_in.email.split("@")[0].capitalize()
+            full_name=(user_in.full_name or clean_email.split("@")[0]).strip().title()
         )
         db.add(new_user)
         db.commit()
@@ -54,8 +58,11 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 def login(user_in: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == user_in.email).first()
-    if not user or not verify_password(user_in.password, user.hashed_password):
+    clean_email = user_in.email.strip().lower()
+    clean_password = user_in.password.strip()
+
+    user = db.query(User).filter(func.lower(User.email) == clean_email).first()
+    if not user or not verify_password(clean_password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
 
     access_token = create_access_token({"sub": user.email, "user_id": user.id})

@@ -17,8 +17,10 @@ const Register = () => {
     setError('');
     setLoading(true);
     try {
-      await register(email, password, fullName);
-      navigate('/login', { state: { registered: true, message: 'Account created successfully! Please sign in below.' } });
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanPassword = password.strip ? password.strip() : password.trim();
+      await register(cleanEmail, cleanPassword, fullName.trim());
+      navigate('/login', { state: { registered: true, message: 'Account created successfully! Please sign in below.', email: cleanEmail } });
     } catch (err) {
       setError(err.response?.data?.detail || 'Registration failed.');
     } finally {
