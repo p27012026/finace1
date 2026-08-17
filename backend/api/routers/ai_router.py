@@ -236,87 +236,102 @@ def process_ai_agent_command(user_message: str, current_user: User, db: Session,
 
     return "", False
 
+from backend.utils.logger import error_logger, ai_logger
+
 @router.post("/chat", response_model=ChatResponse)
 def chat_with_advisor(
     req: ChatRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Construct Rich User Financial Memory Context
-    incomes = db.query(Income).filter(Income.user_id == current_user.id).all()
-    expenses = db.query(Expense).filter(Expense.user_id == current_user.id).all()
-    investments = db.query(Investment).filter(Investment.user_id == current_user.id).all()
-    loans = db.query(Loan).filter(Loan.user_id == current_user.id).all()
-    cards = db.query(CreditCard).filter(CreditCard.user_id == current_user.id).all()
-    health_policies = db.query(HealthSecurity).filter(HealthSecurity.user_id == current_user.id).all()
-    goals = db.query(Goal).filter(Goal.user_id == current_user.id).all()
-    budgets = db.query(Budget).filter(Budget.user_id == current_user.id).all()
-    docs = db.query(Document).filter(Document.user_id == current_user.id).all()
+    try:
+        # Construct Rich User Financial Memory Context
+        incomes = db.query(Income).filter(Income.user_id == current_user.id).all()
+        expenses = db.query(Expense).filter(Expense.user_id == current_user.id).all()
+        investments = db.query(Investment).filter(Investment.user_id == current_user.id).all()
+        loans = db.query(Loan).filter(Loan.user_id == current_user.id).all()
+        cards = db.query(CreditCard).filter(CreditCard.user_id == current_user.id).all()
+        health_policies = db.query(HealthSecurity).filter(HealthSecurity.user_id == current_user.id).all()
+        goals = db.query(Goal).filter(Goal.user_id == current_user.id).all()
+        budgets = db.query(Budget).filter(Budget.user_id == current_user.id).all()
+        docs = db.query(Document).filter(Document.user_id == current_user.id).all()
 
-    total_income = sum(i.amount for i in incomes) or 0.0
-    total_expenses = sum(e.amount for e in expenses) or 0.0
+        total_income = sum(i.amount for i in incomes) or 0.0
+        total_expenses = sum(e.amount for e in expenses) or 0.0
 
-    score_record = db.query(CreditScore).filter(CreditScore.user_id == current_user.id).order_by(CreditScore.record_date.desc()).first()
-    dyn_credit = FinancialCalculator.calculate_dynamic_credit_score(loans, cards, total_income)
-    current_credit_score = score_record.score if score_record else dyn_credit["score"]
+        score_record = db.query(CreditScore).filter(CreditScore.user_id == current_user.id).order_by(CreditScore.record_date.desc()).first()
+        dyn_credit = FinancialCalculator.calculate_dynamic_credit_score(loans, cards, total_income)
+        current_credit_score = score_record.score if score_record else dyn_credit["score"]
 
-    user_context = {
-        "user_name": current_user.full_name or current_user.email,
-        "monthly_income": total_income,
-        "monthly_expenses": total_expenses,
-        "net_savings": total_income - total_expenses,
-        "credit_score": current_credit_score,
-        "credit_rating": dyn_credit["rating"],
-        "credit_status": dyn_credit["status"],
-        "investments_summary": [{"asset": i.asset_name, "value": i.current_value} for i in investments],
-        "active_loans": [{"loan": l.loan_name, "balance": l.remaining_balance, "emi": l.emi_amount} for l in loans],
-        "insurance_policies": [{"policy": h.policy_name, "type": h.policy_type} for h in health_policies],
-        "goals": [{"title": g.title, "target": g.target_amount, "current": g.current_amount} for g in goals],
-        "uploaded_docs_count": len(docs)
-    }
+        user_context = {
+            "user_name": current_user.full_name or current_user.email,
+            "monthly_income": total_income,
+            "monthly_expenses": total_expenses,
+            "net_savings": total_income - total_expenses,
+            "credit_score": current_credit_score,
+            "credit_rating": dyn_credit["rating"],
+            "credit_status": dyn_credit["status"],
+            "investments_summary": [{"asset": i.asset_name, "value": i.current_value} for i in investments],
+            "active_loans": [{"loan": l.loan_name, "balance": l.remaining_balance, "emi": l.emi_amount} for l in loans],
+            "insurance_policies": [{"policy": h.policy_name, "type": h.policy_type} for h in health_policies],
+            "goals": [{"title": g.title, "target": g.target_amount, "current": g.current_amount} for g in goals],
+            "uploaded_docs_count": len(docs)
+        }
 
-    # Process Action Command through AI Tool Engine
-    tool_reply, action_done = process_ai_agent_command(req.message, current_user, db, user_context)
+        # Process Action Command through AI Tool Engine
+        tool_reply, action_done = process_ai_agent_command(req.message, current_user, db, user_context)
 
-    if tool_reply:
-        ai_reply = tool_reply
-    else:
-        # Fetch Conversation History
-        history_records = db.query(ChatHistory).filter(
-            ChatHistory.user_id == current_user.id,
-            ChatHistory.session_id == req.session_id
-        ).order_by(ChatHistory.timestamp.asc()).all()
+        if tool_reply:
+            ai_reply = tool_reply
+        else:
+            # Fetch Conversation History
+            history_records = db.query(ChatHistory).filter(
+                ChatHistory.user_id == current_user.id,
+                ChatHistory.session_id == req.session_id
+            ).order_by(ChatHistory.timestamp.asc()).all()
 
-        history = [{"sender": h.sender, "message": h.message} for h in history_records[-6:]]
-        ai_reply = gemini_service.chat_assistant(req.message, user_context, history)
+            history = [{"sender": h.sender, "message": h.message} for h in history_records[-6:]]
+            ai_reply = gemini_service.chat_assistant(req.message, user_context, history)
 
-    # Save User message
-    user_chat = ChatHistory(
-        user_id=current_user.id,
-        session_id=req.session_id,
-        sender="user",
-        message=req.message,
-        context_used_json=user_context
-    )
-    db.add(user_chat)
+        # Save User message
+        user_chat = ChatHistory(
+            user_id=current_user.id,
+            session_id=req.session_id,
+            sender="user",
+            message=req.message,
+            context_used_json=user_context
+        )
+        db.add(user_chat)
 
-    # Save AI message
-    ai_chat = ChatHistory(
-        user_id=current_user.id,
-        session_id=req.session_id,
-        sender="ai",
-        message=ai_reply,
-        context_used_json=user_context
-    )
-    db.add(ai_chat)
-    db.commit()
+        # Save AI message
+        ai_chat = ChatHistory(
+            user_id=current_user.id,
+            session_id=req.session_id,
+            sender="ai",
+            message=ai_reply,
+            context_used_json=user_context
+        )
+        db.add(ai_chat)
+        db.commit()
 
-    return ChatResponse(
-        sender="ai",
-        message=ai_reply,
-        action_executed=action_done,
-        timestamp=datetime.utcnow()
-    )
+        return ChatResponse(
+            sender="ai",
+            message=ai_reply,
+            action_executed=action_done,
+            timestamp=datetime.utcnow()
+        )
+    except Exception as e:
+        error_logger.error(f"Error in chat_with_advisor endpoint: {str(e)}")
+        fallback_msg = gemini_service._generate_conversational_response(
+            req.message, 
+            {"user_name": current_user.full_name or current_user.email, "monthly_income": 0, "monthly_expenses": 0}
+        )
+        return ChatResponse(
+            sender="ai",
+            message=fallback_msg,
+            action_executed=False,
+            timestamp=datetime.utcnow()
+        )
 
 @router.get("/chat/history")
 def get_chat_history(
