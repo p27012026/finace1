@@ -358,20 +358,23 @@ def get_chat_sessions(
     for c in chats:
         sid = c.session_id or "default"
         clean_msg = (c.message or "").strip().replace("\n", " ")
-        short_title = clean_msg[:35] + "..." if len(clean_msg) > 35 else clean_msg
+        is_user = c.sender == "user"
 
         if sid not in sessions_map:
+            title = (clean_msg[:35] + "...") if len(clean_msg) > 35 else clean_msg if (is_user and clean_msg) else "Chat Conversation"
             sessions_map[sid] = {
                 "session_id": sid,
-                "title": short_title if short_title else "Chat Session",
+                "title": title if title else "Chat Conversation",
+                "has_user_title": is_user and bool(clean_msg),
                 "last_updated": c.timestamp,
                 "message_count": 1
             }
         else:
             sessions_map[sid]["message_count"] += 1
             sessions_map[sid]["last_updated"] = c.timestamp
-            if c.sender == "user" and clean_msg and (sessions_map[sid]["title"] == "Chat Session"):
-                sessions_map[sid]["title"] = short_title
+            if is_user and clean_msg and not sessions_map[sid]["has_user_title"]:
+                sessions_map[sid]["title"] = (clean_msg[:35] + "...") if len(clean_msg) > 35 else clean_msg
+                sessions_map[sid]["has_user_title"] = True
 
     session_list = list(sessions_map.values())
     session_list.sort(key=lambda s: s["last_updated"], reverse=True)
