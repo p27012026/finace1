@@ -9,7 +9,6 @@ import AIChatCenter from './pages/AIChatCenter';
 import Dashboard from './pages/Dashboard';
 import Investments from './pages/Investments';
 import Loans from './pages/Loans';
-import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
