@@ -201,7 +201,6 @@ def get_credit_score_optimizer(current_user: User = Depends(get_current_user), d
 def get_loans_summary(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     loans = db.query(Loan).filter(Loan.user_id == current_user.id, Loan.status == "Active").all()
     cards = db.query(CreditCard).filter(CreditCard.user_id == current_user.id).all()
-    score_record = db.query(CreditScore).filter(CreditScore.user_id == current_user.id).order_by(CreditScore.record_date.desc()).first()
 
     total_loans_balance = sum(l.remaining_balance for l in loans)
     total_monthly_emi = sum(l.emi_amount for l in loans)
@@ -212,7 +211,7 @@ def get_loans_summary(current_user: User = Depends(get_current_user), db: Sessio
 
     # Calculate Dynamic Credit Score from real user data
     credit_eval = FinancialCalculator.calculate_dynamic_credit_score(loans, cards)
-    credit_score_val = score_record.score if score_record else credit_eval["score"]
+    credit_score_val = credit_eval["score"]
 
     ai_recs = gemini_service.generate_recommendations("Loans and Credit Score", {
         "total_debt": total_loans_balance + total_card_balance,
