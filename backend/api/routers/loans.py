@@ -121,29 +121,8 @@ def get_credit_score_optimizer(current_user: User = Depends(get_current_user), d
     total_loans_balance = sum(l.remaining_balance for l in loans)
 
     # Dynamic credit score calculation from real user data (300 to 900 scale)
-    base_score = 750
-
-    if utilization_pct <= 10:
-        base_score += 45
-    elif utilization_pct <= 30:
-        base_score += 25
-    elif utilization_pct <= 50:
-        base_score -= 20
-    elif total_card_limit > 0:
-        base_score -= 60
-
-    if total_loans_balance == 0:
-        base_score += 35
-    elif total_loans_balance < 100000:
-        base_score += 15
-    elif total_loans_balance > 500000:
-        base_score -= 35
-
-    loan_types = set(l.loan_type for l in loans)
-    if len(loan_types) >= 2 or (len(loans) > 0 and len(cards) > 0):
-        base_score += 20
-
-    credit_score_val = score_record.score if score_record else max(300, min(900, base_score))
+    credit_eval = FinancialCalculator.calculate_dynamic_credit_score(loans, cards)
+    credit_score_val = score_record.score if score_record else credit_eval["score"]
 
     factors = [
         {
