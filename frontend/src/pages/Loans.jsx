@@ -336,7 +336,7 @@ const Loans = () => {
   const [cardPayAmount, setCardPayAmount] = useState('');
   const [deletingCard, setDeletingCard] = useState(null);
 
-  const handleAddCreditCard = (e) => {
+  const handleAddCreditCard = async (e) => {
     e.preventDefault();
     if (!cardForm.card_name.trim()) {
       setAddCardError('Please enter a credit card name (e.g. Regalia Gold, SimplyClick)');
@@ -349,32 +349,35 @@ const Loans = () => {
       return;
     }
 
-    const newCard = {
-      id: `card_${Date.now()}`,
-      bank_name: cardForm.bank_name || 'Bank Credit Card',
+    const payload = {
       card_name: cardForm.card_name.trim(),
+      bank_name: cardForm.bank_name || 'Bank Credit Card',
       credit_limit: limit,
       current_balance: Math.min(limit, Math.max(0, balance)),
-      due_date_day: parseInt(cardForm.due_date_day) || 15,
-      min_due: parseFloat(cardForm.min_due) || Math.round(balance * 0.05),
-      apr: parseFloat(cardForm.apr) || 42.0,
-      card_number_suffix: cardForm.card_number_suffix.trim() || '8888'
+      statement_balance: Math.min(limit, Math.max(0, balance)),
+      due_date_day: parseInt(cardForm.due_date_day) || 15
     };
 
-    const updated = [...creditCards, newCard];
-    setCreditCards(updated);
-    saveStoredCreditCards(updated);
-    setShowAddCardModal(false);
-    setCardForm({
-      bank_name: 'HDFC Bank',
-      card_name: '',
-      credit_limit: '100000',
-      current_balance: '15000',
-      due_date_day: '15',
-      min_due: '750',
-      apr: '42.0',
-      card_number_suffix: '1234'
-    });
+    try {
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      await axios.post('/api/loans/credit-card', payload, { headers });
+    } catch (err) {
+      console.error('Error adding credit card to backend:', err);
+    } finally {
+      setShowAddCardModal(false);
+      setCardForm({
+        bank_name: 'HDFC Bank',
+        card_name: '',
+        credit_limit: '100000',
+        current_balance: '15000',
+        due_date_day: '15',
+        min_due: '750',
+        apr: '42.0',
+        card_number_suffix: '1234'
+      });
+      fetchData();
+    }
   };
 
   const handlePayCardBill = (e) => {
@@ -393,17 +396,25 @@ const Loans = () => {
     });
 
     setCreditCards(updated);
-    saveStoredCreditCards(updated);
     setPayingCard(null);
     setCardPayAmount('');
   };
 
-  const confirmDeleteCard = () => {
+  const confirmDeleteCard = async () => {
     if (!deletingCard) return;
-    const updated = creditCards.filter(c => c.id !== deletingCard.id);
-    setCreditCards(updated);
-    saveStoredCreditCards(updated);
+    const targetId = deletingCard.id;
     setDeletingCard(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      await axios.delete(`/api/loans/credit-card/${targetId}`, { headers })
+        .catch(() => axios.post(`/api/loans/credit-card/${targetId}/delete`, {}, { headers }));
+    } catch (err) {
+      console.error('Error deleting credit card from backend:', err);
+    } finally {
+      fetchData();
+    }
   };
 
   useEffect(() => {
