@@ -31,7 +31,7 @@ class GeminiAIService:
             return "Regular financial reviews ensure long-term stability and success."
         
         full_prompt = f"{system_instruction}\n\n{prompt}" if system_instruction else prompt
-        models_to_try = ['gpt-5', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro']
+        models_to_try = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro']
         
         for m in models_to_try:
             try:
