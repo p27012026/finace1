@@ -19,7 +19,6 @@ const Sidebar = () => {
     { name: 'Dashboard Overview', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Investments', path: '/investments', icon: TrendingUp },
     { name: 'Loans & Credit', path: '/loans', icon: CreditCard },
-    { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
   return (
