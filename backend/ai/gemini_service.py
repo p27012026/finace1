@@ -302,6 +302,36 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
                 f"Tip: Automate your 20% savings (₹{savings:,.2f}) immediately on payday!"
             )
 
+        # 5. Comprehensive Health Security & Insurance Guidance
+        elif any(w in msg for w in ['health', 'security', 'insurance', 'medical', 'mediclaim', 'policy', 'coverage', 'hospital', 'secuirty']):
+            policies = user_context.get('insurance_policies', [])
+            policy_count = len(policies) if isinstance(policies, list) else 0
+            
+            return (
+                f"🛡️ **Health Security & Medical Protection Master Guide:**\n\n"
+                f"Health Security (Insurance) is the **#1 non-negotiable financial foundation** to protect your hard-earned savings from medical emergencies and hospital bills.\n\n"
+                f"📊 **Your Live Health Protection Status:**\n"
+                f"• Active Policies Recorded: **{policy_count}**\n"
+                f"• Profile Coverage Status: **{'Protected ✅' if policy_count > 0 else 'No Insurance Policy Recorded ⚠️'}**\n\n"
+                f"--- \n\n"
+                f"🏥 **Recommended Health Insurance Structure:**\n\n"
+                f"| Insurance Layer | Recommended Sum Insured | Top Rated Plans in India | Core Purpose |\n"
+                f"|---|---|---|---|\n"
+                f"| 🛡️ **Base Family Floater** | ₹5 Lakhs – ₹10 Lakhs | HDFC ERGO Optima Secure / Star Health / Niva Bupa | Primary coverage for hospitalization, surgeries & ICU |\n"
+                f"| 🚀 **Super Top-Up Cover** | ₹50 Lakhs – ₹1 Crore | Care Health / Max Bupa Super Top-up | High coverage safety net at very cheap premiums (₹2k-3k/yr) |\n"
+                f"| 🏥 **Corporate Cover** | Provided by Employer | Secondary backup | Covers pre-existing conditions from Day 1 |\n\n"
+                f"--- \n\n"
+                f"⚡ **Must-Have Checklist When Choosing Health Insurance:**\n"
+                f"1. **No Room Rent Capping**: Ensure single private A/C room without daily cap limits.\n"
+                f"2. **Zero Copay**: Insurance company pays 100% of approved hospital claims.\n"
+                f"3. **Automatic Restoration Benefit**: 100% sum insured reload if limit is exhausted.\n"
+                f"4. **Pre & Post Hospitalization**: Covers 60 days pre-admission and 180 days post-discharge tests.\n"
+                f"5. **Tax Savings (Section 80D)**: Save up to **₹25,000 to ₹75,000** in annual income tax deductions!\n\n"
+                f"--- \n\n"
+                f"❓ **Do you have any specific question about Health Security?**\n"
+                f"Tell me: Do you want to add a health policy to your account, or compare top family floater insurance plans?"
+            )
+
         # 6. Fallback Response
         else:
             return (
@@ -309,11 +339,12 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
                 f"📊 **Your Current Profile:**\n"
                 f"• Net Cash Flow: **₹{net_savings:,.2f}** / month\n"
                 f"• Active Debt: **₹{total_debt:,.2f}**\n"
-                f"• Credit Score: **{credit_score} / 900**\n\n"
+                f"• Credit Score: **{credit_score_str}**\n\n"
                 f"You can ask me questions like:\n"
+                f"• *\"Where and how can I get a loan?\"*\n"
+                f"• *\"Explain health security & best insurance plans\"*\n"
                 f"• *\"I am thinking of a safe investment\"*\n"
-                f"• *\"How should I invest ₹1 Lakh?\"*\n"
-                f"• *\"How to clear loan early?\"*"
+                f"• *\"How to build an emergency fund?\"*"
             )
 
     def explain_health_score(self, health_score_data: Dict[str, Any]) -> str:
