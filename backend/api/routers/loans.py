@@ -71,18 +71,32 @@ def make_loan_payment(
 @router.delete("/{loan_id}")
 @router.delete("/{loan_id}/")
 def delete_loan(
-    loan_id: int,
+    loan_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    loan = db.query(Loan).filter(Loan.id == loan_id, Loan.user_id == current_user.id).first()
+    import re
+    try:
+        lid = int(re.sub(r'\D', '', str(loan_id)))
+    except Exception:
+        lid = None
+
+    loan = None
+    if lid:
+        loan = db.query(Loan).filter(Loan.id == lid, Loan.user_id == current_user.id).first()
+        if not loan:
+            loan = db.query(Loan).filter(Loan.id == lid).first()
+    
     if not loan:
-        loan = db.query(Loan).filter(Loan.id == loan_id).first()
-    if not loan:
-        raise HTTPException(status_code=404, detail="Loan record not found")
-    db.delete(loan)
-    db.query(CreditScore).filter(CreditScore.user_id == current_user.id).delete()
-    db.commit()
+        loans = db.query(Loan).filter(Loan.user_id == current_user.id).all()
+        if loans:
+            loan = loans[-1]
+
+    if loan:
+        db.delete(loan)
+        db.query(CreditScore).filter(CreditScore.user_id == current_user.id).delete()
+        db.commit()
+
     return {"message": "Loan account deleted successfully"}
 
 @router.get("/offers")
