@@ -117,7 +117,9 @@ const Dashboard = () => {
             </div>
             <div className="text-right">
               <span className="text-xs text-slate-400">Credit Score</span>
-              <h4 className="text-xl font-bold text-emerald-400">{data?.credit_score}</h4>
+              <h4 className={`text-xl font-bold ${data?.credit_score === 300 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                {data?.credit_score === 300 ? '300 (No History)' : data?.credit_score}
+              </h4>
             </div>
           </div>
           <div className="text-[11px] text-slate-400 pt-2 border-t border-slate-700/40 flex justify-between">
