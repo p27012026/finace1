@@ -417,3 +417,12 @@ def delete_chat_session(
     ).delete()
     db.commit()
     return {"message": f"Session {session_id} deleted successfully"}
+
+@router.delete("/clear-all-sessions")
+def clear_all_chat_sessions(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db.query(ChatHistory).filter(ChatHistory.user_id == current_user.id).delete()
+    db.commit()
+    return {"message": "All chat history cleared successfully"}
