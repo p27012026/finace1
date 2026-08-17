@@ -81,6 +81,7 @@ def delete_loan(
     if not loan:
         raise HTTPException(status_code=404, detail="Loan record not found")
     db.delete(loan)
+    db.query(CreditScore).filter(CreditScore.user_id == current_user.id).delete()
     db.commit()
     return {"message": "Loan account deleted successfully"}
 
