@@ -4,7 +4,7 @@ from backend.database.session import get_db
 from backend.middleware.auth import get_current_user
 from backend.models import (
     User, Income, Expense, Investment, Loan, HealthSecurity,
-    Goal, Budget, CreditScore, ChatHistory, Document
+    Goal, Budget, CreditScore, ChatHistory, Document, CreditCard
 )
 from backend.schemas.all_schemas import ChatRequest, ChatResponse
 from backend.ai.gemini_service import gemini_service
