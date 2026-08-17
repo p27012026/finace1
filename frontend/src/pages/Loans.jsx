@@ -490,34 +490,16 @@ const Loans = () => {
     const targetId = deletingLoan.id;
     setDeletingLoan(null);
 
-    addDeletedLoanId(targetId);
-
-    setData(prev => {
-      if (!prev || !prev.loans) return prev;
-      const updatedLoans = prev.loans.filter(l => l.id !== targetId);
-      const updatedBalance = updatedLoans.reduce((acc, l) => acc + (l.remaining_balance || 0), 0);
-      const updatedEmi = updatedLoans.reduce((acc, l) => acc + (l.emi_amount || 0), 0);
-      return {
-        ...prev,
-        summary: {
-          ...prev.summary,
-          total_loan_balance: updatedBalance,
-          total_monthly_emi: updatedEmi
-        },
-        loans: updatedLoans
-      };
-    });
-
     try {
       const token = localStorage.getItem('token');
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      await axios.delete(`/api/loans/${targetId}/`, { headers }).catch(() => {
-        return axios.delete(`/api/loans/${targetId}`, { headers });
-      }).catch(() => {
-        return axios.post(`/api/loans/${targetId}/pay?amount=99999999`, {}, { headers });
-      });
+      await axios.delete(`/api/loans/${targetId}`, { headers })
+        .catch(() => axios.post(`/api/loans/${targetId}/delete`, {}, { headers }))
+        .catch(() => axios.delete(`/api/loans/${targetId}/`, { headers }));
     } catch (err) {
       console.error('Backend sync delete notice:', err);
+    } finally {
+      fetchData();
     }
   };
 
