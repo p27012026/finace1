@@ -140,9 +140,16 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
         credit_score_str = f"{credit_score} / 900 (No Credit History)" if credit_score == 300 else f"{credit_score} / 900"
         user_name = user_context.get('user_name', 'there')
 
-        # Extract amount mentioned in query if any
-        amt_match = re.search(r'(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d{1,2})?)', msg)
-        query_amount = float(amt_match.group(1)) if amt_match else None
+        # Extract amount mentioned in query if any (e.g. ₹10,000 or 10000)
+        amt_match = re.search(r'(?:₹|rs\.?|inr)?\s*([\d,]+(?:\.\d{1,2})?)', msg)
+        if amt_match:
+            try:
+                query_amount = float(amt_match.group(1).replace(',', ''))
+            except ValueError:
+                query_amount = None
+        else:
+            query_amount = None
+
         alloc_amount = query_amount if (query_amount and query_amount > 0) else (100000.0 if net_savings <= 0 else net_savings)
 
         # 1. Greetings & Profile Overview
