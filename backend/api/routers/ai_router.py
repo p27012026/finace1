@@ -264,13 +264,17 @@ def chat_with_advisor(
 
         total_income = sum(i.amount for i in incomes) or 0.0
         total_expenses = sum(e.amount for e in expenses) or 0.0
-        total_loan_balance = sum(l.remaining_balance for l in active_loans) or 0.0
-        total_card_balance = sum(c.current_balance for c in cards) or 0.0
-        total_debt = total_loan_balance + total_card_balance
-        monthly_emi = sum(l.emi_amount for l in active_loans) or 0.0
 
-        dyn_credit = FinancialCalculator.calculate_dynamic_credit_score(active_loans, cards)
-        current_credit_score = dyn_credit["score"]
+        # Directly execute the Loans & Credit summary path for 100% real-time metric alignment
+        from backend.api.routers.loans import get_loans_summary
+        loans_summary_res = get_loans_summary(current_user, db)
+        loans_summary = loans_summary_res.get("summary", {}) if isinstance(loans_summary_res, dict) else {}
+
+        total_loan_balance = loans_summary.get("total_loan_balance", 0.0)
+        total_card_balance = loans_summary.get("total_card_balance", 0.0)
+        total_debt = total_loan_balance + total_card_balance
+        monthly_emi = loans_summary.get("total_monthly_emi", 0.0)
+        current_credit_score = loans_summary.get("credit_score", 300)
 
         user_context = {
             "user_name": current_user.full_name or current_user.email,
@@ -280,8 +284,8 @@ def chat_with_advisor(
             "total_debt": total_debt,
             "monthly_emi": monthly_emi,
             "credit_score": current_credit_score,
-            "credit_rating": dyn_credit["rating"],
-            "credit_status": dyn_credit["status"],
+            "credit_rating": "Excellent" if current_credit_score >= 780 else ("Good" if current_credit_score >= 700 else ("Fair" if current_credit_score >= 600 else "No Credit History")),
+            "credit_status": "Active Credit Profile" if current_credit_score > 300 else "NH (No History)",
             "investments_summary": [{"asset": i.asset_name, "value": i.current_value} for i in investments],
             "active_loans": [{"loan": l.loan_name, "balance": l.remaining_balance, "emi": l.emi_amount} for l in active_loans],
             "insurance_policies": [{"policy": h.policy_name, "type": h.policy_type} for h in health_policies],
