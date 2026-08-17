@@ -13,18 +13,33 @@ import bcrypt
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    if not plain_password or not hashed_password:
+        return False
+    # Try passlib verification first
     try:
-        pw_bytes = plain_password.encode('utf-8')[:72]
+        if pwd_context.verify(plain_password.strip(), hashed_password):
+            return True
+    except Exception:
+        pass
+    # Fallback to direct bcrypt check
+    try:
+        pw_bytes = plain_password.strip().encode('utf-8')[:72]
         hash_bytes = hashed_password.encode('utf-8')
         return bcrypt.checkpw(pw_bytes, hash_bytes)
     except Exception:
         return False
 
 def get_password_hash(password: str) -> str:
-    pw_bytes = password.encode('utf-8')[:72]
-    salt = bcrypt.gensalt()
-    return bcrypt.hashpw(pw_bytes, salt).decode('utf-8')
+    clean_pw = password.strip()
+    try:
+        return pwd_context.hash(clean_pw)
+    except Exception:
+        pw_bytes = clean_pw.encode('utf-8')[:72]
+        salt = bcrypt.gensalt()
+        return bcrypt.hashpw(pw_bytes, salt).decode('utf-8')
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
