@@ -69,11 +69,12 @@ const AIChatCenter = () => {
     }
   };
 
-  const startNewChat = () => {
+  const startNewChat = async () => {
+    // Save/sync current chat session to sidebar list before starting fresh canvas
+    await fetchSessions();
     const newSid = `session_${Date.now()}`;
     setSessionId(newSid);
     setMessages([]);
-    fetchSessions();
   };
 
   const deleteSession = async (e, sid) => {
