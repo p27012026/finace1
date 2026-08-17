@@ -18,9 +18,15 @@ from backend.business_logic.calculator import FinancialCalculator
 def process_ai_agent_command(user_message: str, current_user: User, db: Session, user_context: dict) -> tuple[str, bool]:
     msg = (user_message or "").strip().lower()
     
-    # Extract Amount (e.g. ₹10000, 10000 rs, inr 10000, 10000)
-    amt_match = re.search(r'(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d{1,2})?)', msg)
-    amount = float(amt_match.group(1)) if amt_match else None
+    # Extract Amount (e.g. ₹10000, ₹10,000, 10000 rs, inr 10000, 10000)
+    amt_match = re.search(r'(?:₹|rs\.?|inr)?\s*([\d,]+(?:\.\d{1,2})?)', msg)
+    if amt_match:
+        try:
+            amount = float(amt_match.group(1).replace(',', ''))
+        except ValueError:
+            amount = None
+    else:
+        amount = None
 
     # 1. ADD INCOME TOOL
     is_income_intent = (amount and amount > 0) and (
