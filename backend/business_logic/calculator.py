@@ -30,6 +30,28 @@ class FinancialCalculator:
         5. Investment & Wealth Growth (15%)
         6. Health Security & Medical Protection (15%)
         """
+        if monthly_income <= 0 and monthly_expenses <= 0 and total_debt_payments <= 0 and total_credit_limit <= 0 and emergency_fund_balance <= 0 and monthly_investment <= 0 and health_security_policies_count <= 0:
+            return {
+                "score": 0.0,
+                "rating": "No Data Recorded",
+                "breakdown": {
+                    "savings_score": 0.0,
+                    "debt_score": 0.0,
+                    "credit_score": 0.0,
+                    "emergency_score": 0.0,
+                    "investment_score": 0.0,
+                    "health_security_score": 0.0,
+                    "budget_score": 0.0
+                },
+                "ratios": {
+                    "savings_ratio_pct": 0.0,
+                    "dti_ratio_pct": 0.0,
+                    "credit_utilization_pct": 0.0,
+                    "health_security_policies": 0,
+                    "total_health_coverage": 0.0
+                }
+            }
+
         if monthly_income <= 0:
             health_sec_score = 100.0 if (health_security_policies_count > 0 and total_health_coverage >= 300000) else 0.0
             return {
