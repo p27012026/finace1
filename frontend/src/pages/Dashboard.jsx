@@ -42,10 +42,10 @@ const Dashboard = () => {
     );
   }
 
-  const health = data?.financial_health_score || { score: 82, rating: 'Good' };
-  const netWorth = data?.net_worth || { total_assets: 70000, total_liabilities: 17000, net_worth: 53000 };
-  const cashFlow = data?.cash_flow || { monthly_income: 9550, monthly_expenses: 3945, net_cash_flow: 5605 };
-  const emergency = data?.emergency_fund_status || { current_balance: 15000, target_balance: 11835, coverage_months: 3.8 };
+  const health = data?.financial_health_score ?? { score: 0, rating: 'No Data Recorded' };
+  const netWorth = data?.net_worth ?? { total_assets: 0, total_liabilities: 0, net_worth: 0 };
+  const cashFlow = data?.cash_flow ?? { monthly_income: 0, monthly_expenses: 0, net_cash_flow: 0 };
+  const emergency = data?.emergency_fund_status ?? { current_balance: 0, target_balance: 0, coverage_months: 0 };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-12">
