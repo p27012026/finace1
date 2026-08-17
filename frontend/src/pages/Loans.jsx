@@ -861,27 +861,43 @@ const Loans = () => {
   // Real-Time Dynamic Credit Score Calculation Engine
   const calculateDynamicCreditScore = () => {
     const activeLoans = data?.loans || [];
+    const cards = creditCards || [];
+    
+    // If NO loans and NO credit cards exist, user has NO credit history (Score = 300 / No History)
+    if (activeLoans.length === 0 && cards.length === 0) {
+      return 300;
+    }
+
     const totalDebt = activeLoans.reduce((acc, l) => acc + (l.remaining_balance || 0), 0);
     const util = parseFloat(creditUtilPct) || 0;
-
     const paidRecords = getPaidLoanRecords();
     const totalEarlyPayments = Object.values(paidRecords).reduce((acc, r) => acc + (r.count || 0), 0);
 
-    let score = 750;
+    let score = 550;
 
     // Credit Utilization Impact
-    if (util <= 10) score += 45;
-    else if (util <= 30) score += 25;
-    else if (util <= 50) score -= 20;
-    else if (totalCardLimit > 0) score -= 60;
-
-    // Total Debt Burden Impact
-    if (totalDebt === 0) score += 35;
-    else if (totalDebt < 100000) score += 15;
-    else if (totalDebt > 500000) score -= 35;
+    if (totalCardLimit > 0) {
+      if (util <= 10) score += 100;
+      else if (util <= 30) score += 80;
+      else if (util <= 50) score += 40;
+      else score -= 40;
+    } else {
+      score += 60;
+    }
 
     // On-Time & Early Payment Bonus
-    score += Math.min(50, totalEarlyPayments * 15);
+    score += Math.min(120, totalEarlyPayments * 25);
+
+    // Credit Mix Diversity Bonus
+    if (activeLoans.length > 0 && cards.length > 0) {
+      score += 60;
+    } else if (activeLoans.length > 0) {
+      score += 30;
+    }
+
+    // Total Debt Burden Impact
+    if (totalDebt > 0 && totalDebt < 100000) score += 30;
+    else if (totalDebt > 500000) score -= 30;
 
     return Math.max(300, Math.min(900, Math.round(score)));
   };
