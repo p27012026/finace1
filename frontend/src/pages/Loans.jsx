@@ -424,20 +424,10 @@ const Loans = () => {
       ]);
 
       if (sumRes && sumRes.data) {
-        const deletedIds = getDeletedLoanIds();
-        const activeLoans = (sumRes.data.loans || []).filter(l => !deletedIds.includes(l.id));
-        const updatedBalance = activeLoans.reduce((acc, l) => acc + (l.remaining_balance || 0), 0);
-        const updatedEmi = activeLoans.reduce((acc, l) => acc + (l.emi_amount || 0), 0);
-
-        setData({
-          ...sumRes.data,
-          summary: {
-            ...sumRes.data.summary,
-            total_loan_balance: updatedBalance,
-            total_monthly_emi: updatedEmi
-          },
-          loans: activeLoans
-        });
+        setData(sumRes.data);
+        if (Array.isArray(sumRes.data.credit_cards)) {
+          setCreditCards(sumRes.data.credit_cards);
+        }
       }
 
       if (offRes && offRes.data && offRes.data.offers && offRes.data.offers.length > 0) {
