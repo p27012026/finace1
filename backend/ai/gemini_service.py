@@ -59,7 +59,13 @@ class GeminiAIService:
             "2. Detail investment categories (Bank FDs, Govt Bonds/SGBs, Debt Funds, Large-Cap Index Funds/Nifty 50, Stocks across Large/Mid/Small cap sectors).\n"
             "3. Outline a 'Safety-First Approach' (Emergency cash -> Short-term goals -> Long-term goals).\n"
             "4. Provide a concrete, illustrative Rupee allocation split using the user's real monthly net savings or sample amounts like ₹1 Lakh.\n"
-            "5. Asks a clear follow-up question inviting the user to specify their investment amount and time horizon (1yr, 3yr, 5yr, 10yr)."
+            "5. Asks a clear follow-up question inviting the user to specify their investment amount and time horizon (1yr, 3yr, 5yr, 10yr).\n"
+            "When answering loan or borrowing questions (e.g., 'where and how to get loans', 'i want a loan of ₹10 Lakhs'):\n"
+            "1. Answer the specific question directly. Explain WHERE (Top Public/Private Banks like SBI, HDFC, ICICI, Bank of Baroda & NBFCs/Digital Apps) and HOW (Secured vs. Unsecured).\n"
+            "2. Detail Secured Loans with collateral options (House, Site/Property, Gold, Auto, FD/Mutual Funds) vs. Unsecured Personal Loans (no collateral).\n"
+            "3. Outline the step-by-step application process and required documents (Aadhaar, PAN, Income Proof, Bank Statement).\n"
+            "4. Provide a sample EMI breakdown table for the requested amount (e.g. ₹10 Lakhs) across different tenures.\n"
+            "5. Invite the user to share any specific doubts or preferred loan type."
         )
 
         # 1. Try Gemini API directly if client available
@@ -147,8 +153,8 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
                 f"• Credit Score: **{credit_score_str}**\n\n"
                 f"You can ask me questions in plain words, such as:\n"
                 f"• *\"I am thinking of a safe investment\"*\n"
-                f"• *\"How should I invest ₹1 Lakh?\"*\n"
-                f"• *\"How to clear my active loans faster?\"*\n"
+                f"• *\"Where and how can I get a loan?\"*\n"
+                f"• *\"I want a loan of ₹10 Lakhs\"*\n"
                 f"• *\"How to build an emergency fund?\"*\n\n"
                 f"What financial goal would you like to discuss today?"
             )
@@ -193,9 +199,57 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
                 f"If you tell me how much you want to invest (e.g. ₹50,000 / ₹1 Lakh / ₹5 Lakhs) and when you need the money (1 year, 3 years, 5 years, 10 years), I can show you a custom safety-focused plan!"
             )
 
-        # 3. Comprehensive Loan & Debt Repayment Guidance
-        elif any(w in msg for w in ['loan', 'emi', 'pay off', 'prepay', 'debt', 'repay', 'interest', 'mortgage']):
-            if active_loans_count > 0:
+        # 3. Comprehensive Loan & Borrowing Guidance (Where & How to get loans)
+        elif any(w in msg for w in ['loan', 'borrow', 'emi', 'pay off', 'prepay', 'debt', 'repay', 'interest', 'mortgage', 'lender', 'bank']):
+            is_where_how_intent = any(kw in msg for kw in [
+                'where', 'how', 'want a loan', 'want loan', 'need loan', 'get loan', 
+                'apply', 'get a loan', 'bank', 'security', 'collateral', 'house', 'site', 'property', 'gold'
+            ]) or ('want' in msg and 'loan' in msg) or ('need' in msg and 'loan' in msg)
+
+            if is_where_how_intent:
+                sample_amt = query_amount if (query_amount and query_amount > 0) else 1000000.0
+                emi_5yr = FinancialCalculator.calculate_emi(sample_amt, 11.0, 60)['emi']
+                emi_15yr = FinancialCalculator.calculate_emi(sample_amt, 8.5, 180)['emi']
+                emi_20yr = FinancialCalculator.calculate_emi(sample_amt, 8.5, 240)['emi']
+
+                return (
+                    f"Here is a complete, step-by-step guide on **where and how you can get a loan** (whether for ₹1 Lakh, **₹{sample_amt:,.0f}**, or ₹50 Lakhs):\n\n"
+                    f"### 🏦 1. WHERE You Can Get Loans (Top Lenders in India):\n\n"
+                    f"| Lender Category | Examples / Top Institutions | Best For | Typical Interest Rates |\n"
+                    f"|---|---|---|---|\n"
+                    f"| 🏛️ **Public Sector Banks** | SBI, Bank of Baroda, Canara Bank | Lowest interest rates & maximum trust | 8.4% - 10.5% p.a. |\n"
+                    f"| 🏦 **Private Sector Banks** | HDFC Bank, ICICI Bank, Axis Bank | Fast processing & pre-approved offers | 9.0% - 12.5% p.a. |\n"
+                    f"| ⚡ **NBFCs & Digital Apps** | Bajaj Finserv, Tata Capital, Navi, MoneyTap | Instant approval with minimal paperwork | 11.5% - 16.0% p.a. |\n\n"
+                    f"--- \n\n"
+                    f"### 🛡️ 2. HOW You Can Get Loans (Secured vs. Unsecured Options):\n\n"
+                    f"#### A. 🔓 Unsecured Loans (No Collateral / Security Required):\n"
+                    f"• **Personal Loan / Instant Cash**: Granted based on your monthly income, CIBIL score, and bank statement. No property or gold needed. *(Rates: 10.5% – 16% p.a.)*\n\n"
+                    f"#### B. 🔐 Secured Loans (Requires Collateral / Security):\n"
+                    f"• 🏠 **Home Loan / Property Loan / Site Loan**: Security is your House, Site/Plot, or Commercial Property. Offers the lowest interest rates *(8.4% – 9.5% p.a.)* and long repayment tenure (up to 30 years).\n"
+                    f"• 🪙 **Gold Loan**: Security is physical gold ornaments. Fast 30-minute instant approval with minimum paperwork! *(Rates: 7.5% – 12% p.a.)*\n"
+                    f"• 🚘 **Auto / Vehicle Loan**: Security is the car or bike being purchased. *(Rates: 8.7% – 10.5% p.a.)*\n"
+                    f"• 📄 **Loan Against Fixed Deposit (FD) / Mutual Funds**: Security is your existing Bank FD or Mutual Fund units. Get up to 90% of your deposit value at just 1%–2% above your FD interest rate!\n\n"
+                    f"--- \n\n"
+                    f"### 📋 3. Step-by-Step Application Process (HOW to Apply):\n\n"
+                    f"1. **Check Eligibility & Credit Score**: Keep CIBIL score above 700 and ensure total EMIs stay under 35% of income.\n"
+                    f"2. **Gather Required Documents**:\n"
+                    f"   - 🆔 **ID & Address Proof**: Aadhaar Card, PAN Card, Passport.\n"
+                    f"   - 💵 **Income Proof**: Salary Slips (3 months) / Form 16 / ITR for 2 years.\n"
+                    f"   - 🏦 **Bank Statements**: Last 6 months bank account statement.\n"
+                    f"   - 🏡 **Property Papers**: Title deed & site approval (for Home/Property Loans).\n"
+                    f"3. **Submit Application**: Apply online via Bank website/App (e.g. SBI YONO, HDFC NetBanking) or visit your nearest branch.\n"
+                    f"4. **Verification & Disbursal**: After verification, loan funds are directly credited into your bank account.\n\n"
+                    f"--- \n\n"
+                    f"💰 **Sample EMI Breakdown for ₹{sample_amt:,.0f} Loan Amount:**\n\n"
+                    f"• **Personal Loan (Unsecured @ 11.0% for 5 Years)**: Monthly EMI = **₹{emi_5yr:,.2f}**\n"
+                    f"• **Property/Home Loan (Secured @ 8.5% for 15 Years)**: Monthly EMI = **₹{emi_15yr:,.2f}**\n"
+                    f"• **Property/Home Loan (Secured @ 8.5% for 20 Years)**: Monthly EMI = **₹{emi_20yr:,.2f}**\n\n"
+                    f"--- \n\n"
+                    f"❓ **Do you have any specific doubt?**\n"
+                    f"Tell me: What loan amount do you need, what security/collateral do you plan to use (House, Gold, FD, or Personal Salary), and what repayment tenure do you prefer?"
+                )
+            
+            elif active_loans_count > 0:
                 dti = (monthly_emi / total_income * 100) if total_income > 0 else 0
                 return (
                     f"Here is your active debt summary based on your live account profile:\n\n"
@@ -210,10 +264,8 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
                 )
             else:
                 return (
-                    f"You currently have **0 active loans**! That is excellent for your financial independence.\n\n"
-                    f"💡 **Smart Borrowing Guidelines:**\n"
-                    f"1. Keep total monthly EMIs under 35% of your net monthly income.\n"
-                    f"2. Compare effective interest rates (APR) before signing loan agreements."
+                    f"You currently have **0 active loans** recorded in your profile! That is great for your cash flow.\n\n"
+                    f"If you want to apply for a new loan, ask me: *\"Where and how can I get a loan?\"* or *\"I want a loan of ₹10 Lakhs\"* and I will guide you through top banks, secured collateral options (House/Site/Gold), and step-by-step application procedures!"
                 )
 
         # 4. Comprehensive Credit Score Guidance
