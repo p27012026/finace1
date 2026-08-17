@@ -269,7 +269,7 @@ def chat_with_advisor(
         total_debt = total_loan_balance + total_card_balance
         monthly_emi = sum(l.emi_amount for l in active_loans) or 0.0
 
-        dyn_credit = FinancialCalculator.calculate_dynamic_credit_score(active_loans, cards, total_income)
+        dyn_credit = FinancialCalculator.calculate_dynamic_credit_score(active_loans, cards)
         current_credit_score = dyn_credit["score"]
 
         user_context = {
