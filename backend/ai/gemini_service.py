@@ -65,7 +65,12 @@ class GeminiAIService:
             "2. Detail Secured Loans with collateral options (House, Site/Property, Gold, Auto, FD/Mutual Funds) vs. Unsecured Personal Loans (no collateral).\n"
             "3. Outline the step-by-step application process and required documents (Aadhaar, PAN, Income Proof, Bank Statement).\n"
             "4. Provide a sample EMI breakdown table for the requested amount (e.g. ₹10 Lakhs) across different tenures.\n"
-            "5. Invite the user to share any specific doubts or preferred loan type."
+            "5. Invite the user to share any specific doubts or preferred loan type.\n"
+            "When answering health security / health insurance questions:\n"
+            "1. Keep it extremely simple and easy to understand. Tell HOW TO make it stronger in 3 simple steps.\n"
+            "2. Avoid confusing technical jargon (like room rent capping or copay) unless the user explicitly asks 'explain in detail'.\n"
+            "3. Recommend base family floater (₹5L-10L) and super top-up (₹50L) from top Indian insurers (HDFC ERGO, Star Health, Niva Bupa).\n"
+            "4. Ask a simple follow-up inviting them to log their policy or ask for detailed terms."
         )
 
         # 1. Try Gemini API directly if client available
@@ -154,7 +159,7 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
                 f"You can ask me questions in plain words, such as:\n"
                 f"• *\"I am thinking of a safe investment\"*\n"
                 f"• *\"Where and how can I get a loan?\"*\n"
-                f"• *\"I want a loan of ₹10 Lakhs\"*\n"
+                f"• *\"How to make my health security stronger?\"*\n"
                 f"• *\"How to build an emergency fund?\"*\n\n"
                 f"What financial goal would you like to discuss today?"
             )
@@ -283,7 +288,44 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
                 f"3. **Credit Mix**: Maintain a healthy balance of secured and unsecured credit."
             )
 
-        # 5. Comprehensive Budget & Savings Guidance
+        # 5. Health Security & Insurance Guidance (Simple How-To approach)
+        elif any(w in msg for w in ['health', 'security', 'insurance', 'medical', 'mediclaim', 'policy', 'coverage', 'hospital', 'secuirty']):
+            is_detail_requested = any(kw in msg for kw in ['explain', 'detail', 'checklist', 'terms', 'capping', 'copay', 'deductible'])
+            policies = user_context.get('insurance_policies', [])
+            policy_count = len(policies) if isinstance(policies, list) else 0
+
+            if is_detail_requested:
+                return (
+                    f"🛡️ **Health Insurance Terms & Detailed Checklist Explained:**\n\n"
+                    f"1. **No Room Rent Capping**: Ensures your hospital room has no daily price limit (e.g. single private A/C room).\n"
+                    f"2. **Zero Copay**: The insurance company pays 100% of approved hospital bills with zero out-of-pocket share from you.\n"
+                    f"3. **Restoration Benefit**: If your cover runs out, the company reloads 100% sum insured automatically.\n"
+                    f"4. **Pre & Post Hospitalization**: Covers doctor fees & test bills 60 days before and 180 days after hospital stay.\n"
+                    f"5. **Section 80D Tax Benefit**: Save up to ₹25,000 to ₹75,000 in income tax deductions every year!"
+                )
+
+            return (
+                f"🛡️ **How to Make Your Health Security Stronger (Simple 3-Step Plan):**\n\n"
+                f"Here is the simplest, easiest way to protect your family and hard-earned money from sudden medical bills:\n\n"
+                f"📊 **Your Current Health Security Status:**\n"
+                f"• Active Policies Recorded: **{policy_count}**\n"
+                f"• Coverage Status: **{'Protected ✅' if policy_count > 0 else 'No Health Policy Recorded Yet ⚠️'}**\n\n"
+                f"--- \n\n"
+                f"💡 **3 Easy Steps to Take:**\n\n"
+                f"1. 🏦 **Get a Base Health Insurance Plan (₹5 Lakhs – ₹10 Lakhs)**\n"
+                f"   Covers hospital room charges, doctor fees, surgeries, and ICU.\n"
+                f"   *Trusted Insurers in India*: HDFC ERGO, Star Health, Niva Bupa, ICICI Lombard.\n\n"
+                f"2. 🚀 **Add a Super Top-Up Cover (₹50 Lakhs)**\n"
+                f"   Gives you massive ₹50 Lakhs extra protection at a super cheap price (costs just ~₹200/month!).\n\n"
+                f"3. 📝 **Record Your Policy in Your Account**\n"
+                f"   Go to **Health Security** tab to log your policy and renewal dates.\n\n"
+                f"--- \n\n"
+                f"❓ **What would you like to do next?**\n"
+                f"• Reply: *\"Explain in detail\"* if you want me to explain technical insurance terms.\n"
+                f"• Or reply: *\"Add health policy of ₹500000\"* to log a policy in your dashboard!"
+            )
+
+        # 6. Comprehensive Budget & Savings Guidance
         elif any(w in msg for w in ['save', 'saving', 'budget', 'expense', 'spend', 'money', 'cut costs', 'salary']):
             needs = total_income * 0.50
             wants = total_income * 0.30
