@@ -318,8 +318,19 @@ const AIChatCenter = () => {
 
             {/* Saved Sessions History List */}
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 text-xs">
-              <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-indigo-400" /> Recent Chat Sessions
+              <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-indigo-400" /> Recent Chat Sessions
+                </span>
+                {sessions.length > 0 && (
+                  <button
+                    onClick={clearAllSessions}
+                    className="hover:text-rose-400 text-slate-500 transition-colors cursor-pointer text-[10px] flex items-center gap-1"
+                    title="Clear All Saved History"
+                  >
+                    <Trash2 className="w-3 h-3" /> Clear All
+                  </button>
+                )}
               </div>
 
               {sessions.length === 0 ? (
