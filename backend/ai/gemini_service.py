@@ -288,12 +288,74 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
                 f"3. **Credit Mix**: Maintain a healthy balance of secured and unsecured credit."
             )
 
-        # 5. Health Security & Insurance Guidance (Simple How-To approach)
+        # 5. Health Security & Insurance Guidance (Dynamic sub-intents)
         elif any(w in msg for w in ['health', 'security', 'insurance', 'medical', 'mediclaim', 'policy', 'coverage', 'hospital', 'secuirty']):
-            is_detail_requested = any(kw in msg for kw in ['explain', 'detail', 'checklist', 'terms', 'capping', 'copay', 'deductible'])
             policies = user_context.get('insurance_policies', [])
             policy_count = len(policies) if isinstance(policies, list) else 0
 
+            # Sub-intent A: "List of companies / top insurers"
+            is_company_list_requested = any(kw in msg for kw in ['list', 'company', 'companies', 'provider', 'providers', 'top insurers', 'which company', 'show list', 'names'])
+            
+            if is_company_list_requested:
+                return (
+                    f"Here are the top health insurance providers in India, categorized by Standalone Health Insurers, Private General Insurers, and Public Sector (Government-Backed) companies:\n\n"
+                    f"### 1. 🛡️ Top Standalone Health Insurance Companies\n"
+                    f"These companies focus exclusively on health insurance and offer wide cashless hospital networks:\n"
+                    f"• **Star Health & Allied Insurance** – One of India's largest health insurers with an extensive network of cashless hospitals.\n"
+                    f"• **HDFC ERGO Health Insurance** – High claim settlement track record and popular plans like Optima Secure.\n"
+                    f"• **Care Health Insurance** – Offers comprehensive coverage options including global treatment coverage.\n"
+                    f"• **Niva Bupa Health Insurance** – Known for plans like ReAssure with 100% unlimited restore benefits.\n"
+                    f"• **Aditya Birla Health Insurance** – Popular for health-tracking rewards and wellness-focused policies.\n"
+                    f"• **ManipalCigna Health Insurance** – Known for high sum insured options and critical illness coverage.\n\n"
+                    f"--- \n\n"
+                    f"### 2. 🏦 Top Private General Insurers (Health Division)\n"
+                    f"• **ICICI Lombard General Insurance** – Fast claim settlement with 10,000+ cashless hospitals.\n"
+                    f"• **Tata AIG General Insurance** – Excellent maternity & OPD benefit options.\n"
+                    f"• **Bajaj Allianz General Insurance** – Popular Health Guard plans with zero room rent capping.\n"
+                    f"• **SBI General Insurance** – Trusted brand with wide rural & urban coverage.\n"
+                    f"• **Digit Insurance** – 100% digital, paperless claim filing via mobile app.\n\n"
+                    f"--- \n\n"
+                    f"### 3. 🏛️ Public Sector (Government-Backed) Health Insurers\n"
+                    f"• **The New India Assurance Co. Ltd.** – Government-owned, high trust factor.\n"
+                    f"• **National Insurance Co. Ltd.** – Reliable traditional policies.\n"
+                    f"• **The Oriental Insurance Co. Ltd.** – Affordable premiums for senior citizens.\n"
+                    f"• **United India Insurance Co. Ltd.** – Wide pan-India branch network.\n\n"
+                    f"--- \n\n"
+                    f"📊 **Key Metrics to Compare Before Choosing:**\n"
+                    f"• **Claim Settlement Ratio (CSR)**: Look for companies with CSR **above 95%**.\n"
+                    f"• **Incurred Claim Ratio (ICR)**: A healthy range is usually between **70% and 90%**.\n"
+                    f"• **Cashless Network Hospitals**: Ensure your preferred local hospitals are in their network.\n"
+                    f"• **Waiting Periods**: Check pre-existing disease (PED) waiting periods (usually 1 to 3 years).\n\n"
+                    f"--- \n\n"
+                    f"❓ **What would you like to do next?**\n"
+                    f"• Reply: *\"How to improve health security\"* to see a step-by-step physical & financial security plan.\n"
+                    f"• Reply: *\"Add health policy of ₹500000\"* to log your policy in your account!"
+                )
+
+            # Sub-intent B: "Improve health security / make stronger"
+            is_improve_requested = any(kw in msg for kw in ['improve', 'stronger', 'protect', 'digital', 'privacy', 'how to'])
+            if is_improve_requested:
+                return (
+                    f"Improving your health security involves protecting both your physical well-being, personal health data, and financial savings:\n\n"
+                    f"### 🔒 1. Digital Health & Data Security\n"
+                    f"• **Secure Your Health Portals & Apps**: Use strong, unique passwords combined with Multi-Factor Authentication (MFA) on patient portals, pharmacy apps, and insurance accounts.\n"
+                    f"• **Review Data Sharing Settings**: Audit privacy settings on fitness trackers and wearables to restrict location tracking and third-party data sales.\n"
+                    f"• **Beware of Health Phishing**: Verify communications claiming to be from your doctor, hospital, or insurance provider before clicking links.\n"
+                    f"• **Backup Medical Records**: Keep secure digital or physical copies of essential records (vaccinations, prescriptions, blood reports) in an encrypted drive.\n\n"
+                    f"--- \n\n"
+                    f"### 🛡️ 2. Financial & Personal Health Protection\n"
+                    f"• **Maintain Base Health Coverage (₹5 Lakhs – ₹10 Lakhs)**: Protect your savings against sudden hospitalization & ICU costs.\n"
+                    f"• **Add Super Top-Up (₹50 Lakhs)**: Get ₹50 Lakhs extra safety cover at a minimal cost (~₹200/month).\n"
+                    f"• **Build an Emergency Medical Fund**: Set aside savings specifically for out-of-pocket medical expenses or high deductibles.\n"
+                    f"• **Stay Proactive with Preventive Care**: Schedule annual checkups and routine health screenings to identify risks early.\n\n"
+                    f"--- \n\n"
+                    f"❓ **What would you like to do next?**\n"
+                    f"• Reply: *\"Show list of health insurance companies\"* to see top insurers in India.\n"
+                    f"• Reply: *\"Add health policy of ₹500000\"* to log a policy in your dashboard!"
+                )
+
+            # Sub-intent C: "Explain in detail / technical checklist"
+            is_detail_requested = any(kw in msg for kw in ['explain', 'detail', 'checklist', 'terms', 'capping', 'copay', 'deductible'])
             if is_detail_requested:
                 return (
                     f"🛡️ **Health Insurance Terms & Detailed Checklist Explained:**\n\n"
@@ -304,6 +366,7 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
                     f"5. **Section 80D Tax Benefit**: Save up to ₹25,000 to ₹75,000 in income tax deductions every year!"
                 )
 
+            # Sub-intent D: Default Simple Guide
             return (
                 f"🛡️ **How to Make Your Health Security Stronger (Simple 3-Step Plan):**\n\n"
                 f"Here is the simplest, easiest way to protect your family and hard-earned money from sudden medical bills:\n\n"
@@ -321,8 +384,8 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
                 f"   Go to **Health Security** tab to log your policy and renewal dates.\n\n"
                 f"--- \n\n"
                 f"❓ **What would you like to do next?**\n"
-                f"• Reply: *\"Explain in detail\"* if you want me to explain technical insurance terms.\n"
-                f"• Or reply: *\"Add health policy of ₹500000\"* to log a policy in your dashboard!"
+                f"• Reply: *\"Show list of health insurance companies\"* to see top insurers in India.\n"
+                f"• Reply: *\"How to improve health security\"* for a digital & financial safety plan."
             )
 
         # 6. Comprehensive Budget & Savings Guidance
@@ -344,36 +407,6 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
                 f"Tip: Automate your 20% savings (₹{savings:,.2f}) immediately on payday!"
             )
 
-        # 5. Comprehensive Health Security & Insurance Guidance
-        elif any(w in msg for w in ['health', 'security', 'insurance', 'medical', 'mediclaim', 'policy', 'coverage', 'hospital', 'secuirty']):
-            policies = user_context.get('insurance_policies', [])
-            policy_count = len(policies) if isinstance(policies, list) else 0
-            
-            return (
-                f"🛡️ **Health Security & Medical Protection Master Guide:**\n\n"
-                f"Health Security (Insurance) is the **#1 non-negotiable financial foundation** to protect your hard-earned savings from medical emergencies and hospital bills.\n\n"
-                f"📊 **Your Live Health Protection Status:**\n"
-                f"• Active Policies Recorded: **{policy_count}**\n"
-                f"• Profile Coverage Status: **{'Protected ✅' if policy_count > 0 else 'No Insurance Policy Recorded ⚠️'}**\n\n"
-                f"--- \n\n"
-                f"🏥 **Recommended Health Insurance Structure:**\n\n"
-                f"| Insurance Layer | Recommended Sum Insured | Top Rated Plans in India | Core Purpose |\n"
-                f"|---|---|---|---|\n"
-                f"| 🛡️ **Base Family Floater** | ₹5 Lakhs – ₹10 Lakhs | HDFC ERGO Optima Secure / Star Health / Niva Bupa | Primary coverage for hospitalization, surgeries & ICU |\n"
-                f"| 🚀 **Super Top-Up Cover** | ₹50 Lakhs – ₹1 Crore | Care Health / Max Bupa Super Top-up | High coverage safety net at very cheap premiums (₹2k-3k/yr) |\n"
-                f"| 🏥 **Corporate Cover** | Provided by Employer | Secondary backup | Covers pre-existing conditions from Day 1 |\n\n"
-                f"--- \n\n"
-                f"⚡ **Must-Have Checklist When Choosing Health Insurance:**\n"
-                f"1. **No Room Rent Capping**: Ensure single private A/C room without daily cap limits.\n"
-                f"2. **Zero Copay**: Insurance company pays 100% of approved hospital claims.\n"
-                f"3. **Automatic Restoration Benefit**: 100% sum insured reload if limit is exhausted.\n"
-                f"4. **Pre & Post Hospitalization**: Covers 60 days pre-admission and 180 days post-discharge tests.\n"
-                f"5. **Tax Savings (Section 80D)**: Save up to **₹25,000 to ₹75,000** in annual income tax deductions!\n\n"
-                f"--- \n\n"
-                f"❓ **Do you have any specific question about Health Security?**\n"
-                f"Tell me: Do you want to add a health policy to your account, or compare top family floater insurance plans?"
-            )
-
         # 6. Fallback Response
         else:
             return (
@@ -384,7 +417,7 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
                 f"• Credit Score: **{credit_score_str}**\n\n"
                 f"You can ask me questions like:\n"
                 f"• *\"Where and how can I get a loan?\"*\n"
-                f"• *\"Explain health security & best insurance plans\"*\n"
+                f"• *\"Show list of health insurance companies\"*\n"
                 f"• *\"I am thinking of a safe investment\"*\n"
                 f"• *\"How to build an emergency fund?\"*"
             )
