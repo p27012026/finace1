@@ -256,3 +256,35 @@ def create_credit_card(data: CreditCardCreate, current_user: User = Depends(get_
     db.commit()
     db.refresh(card)
     return card
+
+@router.post("/credit-card/{card_id}/delete")
+@router.delete("/credit-card/{card_id}")
+@router.delete("/credit-card/{card_id}/")
+def delete_credit_card(
+    card_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    import re
+    try:
+        cid = int(re.sub(r'\D', '', str(card_id)))
+    except Exception:
+        cid = None
+
+    card = None
+    if cid:
+        card = db.query(CreditCard).filter(CreditCard.id == cid, CreditCard.user_id == current_user.id).first()
+        if not card:
+            card = db.query(CreditCard).filter(CreditCard.id == cid).first()
+
+    if not card:
+        cards = db.query(CreditCard).filter(CreditCard.user_id == current_user.id).all()
+        if cards:
+            card = cards[-1]
+
+    if card:
+        db.delete(card)
+        db.query(CreditScore).filter(CreditScore.user_id == current_user.id).delete()
+        db.commit()
+
+    return {"message": "Credit card deleted successfully"}
