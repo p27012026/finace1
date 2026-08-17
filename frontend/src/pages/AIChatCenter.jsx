@@ -94,6 +94,20 @@ const AIChatCenter = () => {
     const text = textToSend || inputMsg;
     if (!text.trim() || loading) return;
 
+    const currentSid = sessionId;
+    const cleanText = text.trim().replace(/\n/g, ' ');
+    const title = cleanText.length > 35 ? cleanText.substring(0, 35) + '...' : cleanText;
+
+    // Instantly update local sessions list so current chat appears in sidebar right away!
+    setSessions(prev => {
+      const exists = prev.some(s => s.session_id === currentSid);
+      if (exists) {
+        return prev.map(s => s.session_id === currentSid ? { ...s, last_updated: new Date().toISOString(), message_count: (s.message_count || 1) + 1 } : s);
+      } else {
+        return [{ session_id: currentSid, title: title || 'Conversation Session', last_updated: new Date().toISOString(), message_count: 1 }, ...prev];
+      }
+    });
+
     setInputMsg('');
     setMessages(prev => [...prev, { sender: 'user', message: text }]);
     setLoading(true);
@@ -101,7 +115,7 @@ const AIChatCenter = () => {
     try {
       const res = await axios.post('/api/ai/chat', { 
         message: text,
-        session_id: sessionId 
+        session_id: currentSid 
       });
       setMessages(prev => [...prev, { sender: 'ai', message: res.data.message }]);
       if (res.data.action_executed) {
