@@ -255,7 +255,7 @@ def chat_with_advisor(
         incomes = db.query(Income).filter(Income.user_id == current_user.id).all()
         expenses = db.query(Expense).filter(Expense.user_id == current_user.id).all()
         investments = db.query(Investment).filter(Investment.user_id == current_user.id).all()
-        loans = db.query(Loan).filter(Loan.user_id == current_user.id).all()
+        active_loans = db.query(Loan).filter(Loan.user_id == current_user.id, Loan.status == "Active").all()
         cards = db.query(CreditCard).filter(CreditCard.user_id == current_user.id).all()
         health_policies = db.query(HealthSecurity).filter(HealthSecurity.user_id == current_user.id).all()
         goals = db.query(Goal).filter(Goal.user_id == current_user.id).all()
@@ -264,10 +264,12 @@ def chat_with_advisor(
 
         total_income = sum(i.amount for i in incomes) or 0.0
         total_expenses = sum(e.amount for e in expenses) or 0.0
-        total_debt = sum(l.remaining_balance for l in loans if getattr(l, 'status', 'Active') == 'Active') or 0.0
-        monthly_emi = sum(l.emi_amount for l in loans if getattr(l, 'status', 'Active') == 'Active') or 0.0
+        total_loan_balance = sum(l.remaining_balance for l in active_loans) or 0.0
+        total_card_balance = sum(c.current_balance for c in cards) or 0.0
+        total_debt = total_loan_balance + total_card_balance
+        monthly_emi = sum(l.emi_amount for l in active_loans) or 0.0
 
-        dyn_credit = FinancialCalculator.calculate_dynamic_credit_score(loans, cards, total_income)
+        dyn_credit = FinancialCalculator.calculate_dynamic_credit_score(active_loans, cards, total_income)
         current_credit_score = dyn_credit["score"]
 
         user_context = {
@@ -281,7 +283,7 @@ def chat_with_advisor(
             "credit_rating": dyn_credit["rating"],
             "credit_status": dyn_credit["status"],
             "investments_summary": [{"asset": i.asset_name, "value": i.current_value} for i in investments],
-            "active_loans": [{"loan": l.loan_name, "balance": l.remaining_balance, "emi": l.emi_amount} for l in loans],
+            "active_loans": [{"loan": l.loan_name, "balance": l.remaining_balance, "emi": l.emi_amount} for l in active_loans],
             "insurance_policies": [{"policy": h.policy_name, "type": h.policy_type} for h in health_policies],
             "goals": [{"title": g.title, "target": g.target_amount, "current": g.current_amount} for g in goals],
             "uploaded_docs_count": len(docs)
