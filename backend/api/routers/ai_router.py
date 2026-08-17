@@ -352,23 +352,30 @@ def get_chat_sessions(
 ):
     chats = db.query(ChatHistory).filter(
         ChatHistory.user_id == current_user.id
-    ).order_by(ChatHistory.timestamp.desc()).all()
+    ).order_by(ChatHistory.timestamp.asc()).all()
 
     sessions_map = {}
     for c in chats:
         sid = c.session_id or "default"
+        clean_msg = (c.message or "").strip().replace("\n", " ")
+        short_title = clean_msg[:35] + "..." if len(clean_msg) > 35 else clean_msg
+
         if sid not in sessions_map:
             sessions_map[sid] = {
                 "session_id": sid,
-                "title": c.message[:35] + "..." if len(c.message) > 35 else c.message,
+                "title": short_title if short_title else "Chat Session",
                 "last_updated": c.timestamp,
-                "message_count": 0
+                "message_count": 1
             }
-        sessions_map[sid]["message_count"] += 1
-        if c.sender == "user" and c.message:
-            sessions_map[sid]["title"] = c.message[:35] + "..." if len(c.message) > 35 else c.message
+        else:
+            sessions_map[sid]["message_count"] += 1
+            sessions_map[sid]["last_updated"] = c.timestamp
+            if c.sender == "user" and clean_msg and (sessions_map[sid]["title"] == "Chat Session"):
+                sessions_map[sid]["title"] = short_title
 
-    return list(sessions_map.values())
+    session_list = list(sessions_map.values())
+    session_list.sort(key=lambda s: s["last_updated"], reverse=True)
+    return session_list
 
 @router.delete("/session/{session_id}")
 def delete_chat_session(
