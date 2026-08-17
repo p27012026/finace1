@@ -212,24 +212,8 @@ def get_loans_summary(current_user: User = Depends(get_current_user), db: Sessio
     credit_utilization_pct = (total_card_balance / total_credit_limit * 100) if total_credit_limit > 0 else 0.0
 
     # Calculate Dynamic Credit Score from real user data
-    base_score = 750
-    if credit_utilization_pct <= 10:
-        base_score += 45
-    elif credit_utilization_pct <= 30:
-        base_score += 25
-    elif credit_utilization_pct <= 50:
-        base_score -= 20
-    elif total_credit_limit > 0:
-        base_score -= 60
-
-    if total_loans_balance == 0:
-        base_score += 35
-    elif total_loans_balance < 100000:
-        base_score += 15
-    elif total_loans_balance > 500000:
-        base_score -= 35
-
-    credit_score_val = score_record.score if score_record else max(300, min(900, base_score))
+    credit_eval = FinancialCalculator.calculate_dynamic_credit_score(loans, cards)
+    credit_score_val = score_record.score if score_record else credit_eval["score"]
 
     ai_recs = gemini_service.generate_recommendations("Loans and Credit Score", {
         "total_debt": total_loans_balance + total_card_balance,
