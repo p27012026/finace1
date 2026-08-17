@@ -90,6 +90,16 @@ const AIChatCenter = () => {
     }
   };
 
+  const clearAllSessions = async () => {
+    try {
+      await axios.delete('/api/ai/clear-all-sessions');
+      setSessions([]);
+      startNewChat();
+    } catch (err) {
+      console.error('Failed to clear all chat sessions:', err);
+    }
+  };
+
   const handleSendText = async (textToSend) => {
     const text = textToSend || inputMsg;
     if (!text.trim() || loading) return;
