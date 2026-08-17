@@ -113,7 +113,6 @@ def get_online_loan_offers(
 def get_credit_score_optimizer(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     loans = db.query(Loan).filter(Loan.user_id == current_user.id, Loan.status == "Active").all()
     cards = db.query(CreditCard).filter(CreditCard.user_id == current_user.id).all()
-    score_record = db.query(CreditScore).filter(CreditScore.user_id == current_user.id).order_by(CreditScore.record_date.desc()).first()
 
     total_card_limit = sum(c.credit_limit for c in cards)
     total_card_balance = sum(c.current_balance for c in cards)
@@ -122,7 +121,7 @@ def get_credit_score_optimizer(current_user: User = Depends(get_current_user), d
 
     # Dynamic credit score calculation from real user data (300 to 900 scale)
     credit_eval = FinancialCalculator.calculate_dynamic_credit_score(loans, cards)
-    credit_score_val = score_record.score if score_record else credit_eval["score"]
+    credit_score_val = credit_eval["score"]
 
     factors = [
         {
