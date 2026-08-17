@@ -125,7 +125,8 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
         total_debt = sum(l.get('balance', 0.0) if isinstance(l, dict) else getattr(l, 'remaining_balance', 0.0) for l in active_loans) if active_loans_count > 0 else 0.0
         monthly_emi = sum(l.get('emi', 0.0) if isinstance(l, dict) else getattr(l, 'emi_amount', 0.0) for l in active_loans) if active_loans_count > 0 else 0.0
         
-        credit_score = user_context.get('credit_score', summary.get('credit_score', 785))
+        credit_score = user_context.get('credit_score', summary.get('credit_score', 300))
+        credit_score_str = f"{credit_score} / 900 (No Credit History)" if credit_score == 300 else f"{credit_score} / 900"
         user_name = user_context.get('user_name', 'there')
 
         # Extract amount mentioned in query if any
@@ -143,7 +144,7 @@ Provide a clear, structured, friendly, and simple AI Financial Advisor chat resp
                 f"• Monthly Expenses: **₹{total_expenses:,.2f}**\n"
                 f"• Net Monthly Savings: **₹{net_savings:,.2f}**\n"
                 f"• Active Debt: **₹{total_debt:,.2f}** (Monthly EMI: ₹{monthly_emi:,.2f})\n"
-                f"• Credit Score: **{credit_score} / 900**\n\n"
+                f"• Credit Score: **{credit_score_str}**\n\n"
                 f"You can ask me questions in plain words, such as:\n"
                 f"• *\"I am thinking of a safe investment\"*\n"
                 f"• *\"How should I invest ₹1 Lakh?\"*\n"
