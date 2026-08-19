@@ -374,16 +374,14 @@ const AIChatCenter = () => {
           {/* Message Feed */}
           <div className="flex-1 p-6 overflow-y-auto space-y-5 text-sm flex flex-col justify-between">
             {messages.length === 0 ? (
-              /* ChatGPT Blank Slate Welcome Hero Screen */
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-5 animate-in fade-in zoom-in-95 duration-300">
-                <div className="p-5 rounded-3xl bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-2xl shadow-indigo-500/30 text-white">
-                  <Bot className="w-12 h-12 animate-bounce" />
+              /* Clean Empty Space Canvas */
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4">
+                <div className="p-4 rounded-2xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
+                  <Bot className="w-10 h-10 animate-pulse" />
                 </div>
-                <div className="space-y-1.5 max-w-lg">
-                  <h3 className="text-2xl font-bold text-slate-100">What can I help with today?</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Ask me any financial questions or execute actions like logging expenses, adding salary, or building investment plans.
-                  </p>
+                <div className="space-y-1">
+                  <h3 className="text-xl font-bold text-slate-200">AI Advisor Ready</h3>
+                  <p className="text-xs text-slate-400">Type any question or command below to start.</p>
                 </div>
               </div>
             ) : (
